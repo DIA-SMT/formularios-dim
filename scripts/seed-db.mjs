@@ -1,9 +1,15 @@
 // scripts/seed-db.mjs
 // Run with: node scripts/seed-db.mjs
+// Requires: NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables
 
-const SUPABASE_URL = "https://gkufrhsyfrpysykewqfc.supabase.co";
-const SERVICE_ROLE_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdrdWZyaHN5ZnJweXN5a2V3cWZjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDUyNTk2OSwiZXhwIjoyMDkwMTAxOTY5fQ.in3QaKn2Rg5q-9h8WHHAR4xh01MVU6x_jnhfqK3Tgzc";
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
+  console.error("❌ Error: NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set.");
+  console.log("💡 Tip: You can run this with: NEXT_PUBLIC_SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/seed-db.mjs");
+  process.exit(1);
+}
 
 const headers = {
   apikey: SERVICE_ROLE_KEY,
