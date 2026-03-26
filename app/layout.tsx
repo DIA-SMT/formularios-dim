@@ -8,7 +8,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: 'Formularios Digitales | DIM — San Miguel de Tucumán',
-  description: 'Plataforma de formularios digitales de la Dirección de Ingresos Municipales de la Municipalidad de San Miguel de Tucumán.',
+  description: 'Plataforma de formularios digitales de la Dirección de Ingresos Municipales (DIM) de la Municipalidad de San Miguel de Tucumán.',
   generator: 'v0.app',
   icons: {
     icon: [
