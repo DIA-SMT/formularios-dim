@@ -5,6 +5,7 @@ import {
   Clock,
   TrendingUp,
   ArrowRight,
+  CalendarDays,
 } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -60,6 +61,21 @@ export default async function DashboardPage() {
 
   const recentResponses = responses.slice(0, 3);
   const activeForms = forms.filter((f) => f.status === "published").slice(0, 5);
+
+  // Weekly report logic
+  const now = new Date();
+  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  
+  const weeklyResponses = responses.filter((r) => new Date(r.submittedAt) >= oneWeekAgo);
+  const weeklyTotal = weeklyResponses.length;
+
+  const weeklyByForm = weeklyResponses.reduce((acc, r) => {
+    acc[r.formName] = (acc[r.formName] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const weeklyReportData = Object.entries(weeklyByForm)
+    .sort((a, b) => b[1] - a[1]); // all forms with activity this week
 
   return (
     <div className="space-y-8 pb-20 md:pb-0">
@@ -136,6 +152,54 @@ export default async function DashboardPage() {
                     >
                       {resp.status}
                     </Badge>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Weekly Report */}
+        <Card className="border-border">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CalendarDays className="w-5 h-5 text-indigo-600" />
+                <CardTitle className="text-base font-semibold">
+                  Informe Semanal
+                </CardTitle>
+              </div>
+              <Badge variant="secondary" className="font-mono text-xs">
+                Últimos 7 días
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="mb-4">
+              <p className="text-sm text-muted-foreground">Total completados en la semana</p>
+              <p className="text-3xl font-bold text-indigo-700 mt-1">{weeklyTotal}</p>
+            </div>
+            
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              Desglose por formulario
+            </p>
+            
+            <div className="space-y-3">
+              {weeklyReportData.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-2 italic">Sin actividad reciente</p>
+              ) : (
+                weeklyReportData.map(([formName, count]) => (
+                  <div key={formName} className="flex flex-col gap-1.5">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-foreground line-clamp-1 flex-1 pr-2">{formName}</span>
+                      <span className="font-bold text-foreground">{count}</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-muted overflow-hidden rounded-full">
+                      <div 
+                        className="h-full bg-indigo-500 rounded-full" 
+                        style={{ width: `${(count / weeklyTotal) * 100}%` }}
+                      />
+                    </div>
                   </div>
                 ))
               )}

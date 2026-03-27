@@ -153,7 +153,7 @@ export default function FormularioPage({ params }: PageProps) {
       <PublicHeader />
 
       {/* Breadcrumb */}
-      <div className="bg-white border-b border-border px-4 py-3">
+      <div className="bg-white border-b border-border px-4 py-3 print:hidden">
         <div className="max-w-4xl mx-auto">
           <Link
             href="/"
@@ -248,7 +248,7 @@ export default function FormularioPage({ params }: PageProps) {
               </div>
 
               {/* Action buttons */}
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-col sm:flex-row gap-3 print:hidden">
                 <Button type="submit" disabled={isSubmitting} className="gap-2 sm:flex-1">
                   {isSubmitting ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
