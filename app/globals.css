@@ -45,6 +45,16 @@
   --badge-draft: oklch(0.65 0.08 60);
 }
 
+.theme-public {
+  --primary: #0066ff;
+  --primary-foreground: #ffffff;
+  --ring: #0066ff;
+  --sidebar-primary: #0066ff;
+  --sidebar-primary-foreground: #ffffff;
+  --header-bg: var(--primary);
+  --header-foreground: var(--primary-foreground);
+}
+
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);

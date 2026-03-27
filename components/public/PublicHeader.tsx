@@ -14,14 +14,14 @@ export function PublicHeader() {
       style={{ background: "var(--header-bg)", color: "var(--header-foreground)" }}
     >
       {/* Top bar */}
-      <div className="border-b border-white/10 px-4 py-1.5">
+      <div className="border-b border-white/20 px-4 py-1.5">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <p className="text-xs text-white/70">
+          <p className="text-xs text-white/90 font-medium">
             Municipalidad de San Miguel de Tucumán — Provincia de Tucumán
           </p>
           <Link
             href="/admin"
-            className="text-xs text-white/70 hover:text-white transition-colors"
+            className="text-xs text-white/90 hover:text-white transition-colors font-medium"
           >
             Acceso Administrativo
           </Link>
@@ -29,32 +29,32 @@ export function PublicHeader() {
       </div>
 
       {/* Main header */}
-      <div className="px-4 py-4">
+      <div className="px-4 py-2.5">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <div className="bg-white/15 rounded-lg p-2">
+            <div className="bg-white/20 rounded-lg p-2">
               <Building2 className="w-6 h-6 text-white" />
             </div>
             <div>
               <p className="font-bold text-white text-lg leading-tight">
                 Dir. de Ingresos Municipales
               </p>
-              <p className="text-white/70 text-xs">Municipalidad de San Miguel de Tucumán</p>
+              <p className="text-white/90 text-xs font-medium">Municipalidad de San Miguel de Tucumán</p>
             </div>
           </Link>
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-6">
-            <Link href="/" className="text-sm text-white/80 hover:text-white transition-colors">
+            <Link href="/" className="text-sm text-white hover:text-white/80 transition-colors font-medium">
               Inicio
             </Link>
-            <Link href="/#formularios" className="text-sm text-white/80 hover:text-white transition-colors">
+            <Link href="/#formularios" className="text-sm text-white hover:text-white/80 transition-colors font-medium">
               Formularios
             </Link>
             <Link
               href="https://municipalidad.gob.ar"
               target="_blank"
-              className="text-sm text-white/80 hover:text-white transition-colors"
+              className="text-sm text-white hover:text-white/80 transition-colors font-medium"
             >
               Sitio Municipal
             </Link>
