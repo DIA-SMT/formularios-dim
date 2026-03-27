@@ -115,7 +115,7 @@ export default function NuevoFormularioPage() {
 
     try {
       const formData = new FormData();
-      formData.append("pdf", pdfFile);
+      formData.append("pdf", pdfFile); // keep parameter name 'pdf' for API compatibility
 
       const res = await fetch("/api/admin/analizar-pdf", {
         method: "POST",
@@ -153,7 +153,8 @@ export default function NuevoFormularioPage() {
         })
       );
 
-      setFields(newFields);
+      // Append new fields to existing ones
+      setFields((prev) => [...prev, ...newFields]);
       setAiSuggestions(newFields.length);
       setAnalysisStatus("success");
 
@@ -257,15 +258,15 @@ export default function NuevoFormularioPage() {
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-primary" />
             <CardTitle className="text-base text-primary">
-              Generar desde PDF con IA
+              Generar con IA (PDF o Imagen)
             </CardTitle>
             <Badge variant="secondary" className="text-xs ml-auto">
               Recomendado
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Subí el formulario institucional en PDF y la IA detectará automáticamente
-            todos los campos, secciones y metadatos.
+            Subí un PDF o capturas de imagen (JPG/PNG) del formulario. La IA detectará 
+            los campos y los agregará al listado. Podés subir varias partes para un mismo formulario.
           </p>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -277,7 +278,7 @@ export default function NuevoFormularioPage() {
               onDrop={(e) => {
                 e.preventDefault();
                 const file = e.dataTransfer.files?.[0];
-                if (file?.type === "application/pdf") {
+                if (file?.type === "application/pdf" || file?.type.startsWith("image/")) {
                   setPdfFile(file);
                   setAnalysisStatus("idle");
                   setAnalysisError(null);
@@ -286,13 +287,13 @@ export default function NuevoFormularioPage() {
             >
               <Upload className="w-8 h-8 text-primary/60 mx-auto mb-3" />
               <p className="text-sm font-medium text-foreground">
-                Arrastrá el PDF aquí o hacé clic para seleccionarlo
+                Arrastrá el archivo aquí o hacé clic para seleccionarlo
               </p>
-              <p className="text-xs text-muted-foreground mt-1">PDF hasta 10 MB</p>
+              <p className="text-xs text-muted-foreground mt-1">PDF, JPG o PNG hasta 10 MB</p>
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".pdf,application/pdf"
+                accept=".pdf,application/pdf,image/*"
                 className="hidden"
                 onChange={handlePdfSelect}
               />
@@ -347,12 +348,12 @@ export default function NuevoFormularioPage() {
                   {analysisStatus === "loading" ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Analizando PDF con IA...
+                      Analizando archivo con IA...
                     </>
                   ) : (
                     <>
                       <Sparkles className="w-4 h-4" />
-                      Analizar PDF y generar campos
+                      Analizar y agregar campos
                     </>
                   )}
                 </Button>
@@ -360,12 +361,12 @@ export default function NuevoFormularioPage() {
               {analysisStatus === "success" && (
                 <Button
                   variant="outline"
-                  onClick={analyzePdf}
+                  onClick={removePdf}
                   className="gap-2"
                   size="sm"
                 >
-                  <Sparkles className="w-4 h-4" />
-                  Re-analizar
+                  <Plus className="w-4 h-4" />
+                  Subir otra parte (Agregar más)
                 </Button>
               )}
             </div>

@@ -64,24 +64,25 @@ export async function POST(req: Request) {
       return Response.json({ error: "No se recibió ningún archivo PDF." }, { status: 400 });
     }
 
-    if (file.type !== "application/pdf") {
-      return Response.json({ error: "El archivo debe ser un PDF." }, { status: 400 });
+    if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
+      return Response.json({ error: "El archivo debe ser un PDF o una imagen (JPG, PNG)." }, { status: 400 });
     }
 
     if (file.size > 10 * 1024 * 1024) {
       return Response.json(
-        { error: "El PDF no puede superar los 10 MB." },
+        { error: "El archivo no puede superar los 10 MB." },
         { status: 400 }
       );
     }
 
     const arrayBuffer = await file.arrayBuffer();
     const base64 = Buffer.from(arrayBuffer).toString("base64");
+    const mediaType = file.type;
 
     // Fetch manual a OpenRouter
     const prompt = `Eres un asistente experto en digitalización de formularios municipales argentinos para la Dirección de Ingresos Municipales (DIM) de la Municipalidad de San Miguel de Tucumán.
 
-Analizá este PDF y extraé todos los campos del formulario con precisión. Para cada campo:
+Analizá este documento o imagen y extraé todos los campos del formulario con precisión. Para cada campo:
 - Identificá su etiqueta exacta o aproximada
 - Inferí el tipo de campo más apropiado para digitalizarlo
 - Agrupá los campos bajo su sección correspondiente (bloques, recuadros o encabezados dentro del formulario)
@@ -126,12 +127,15 @@ No incluyas etiquetas de \`\`\`json ni nada de texto adicional.`;
                 text: prompt,
               },
               {
-                type: "document",
-                source: {
+                type: mediaType === "application/pdf" ? "document" : "image_url",
+                source: mediaType === "application/pdf" ? {
                   type: "base64",
                   media_type: "application/pdf",
                   data: base64
-                }
+                } : undefined,
+                image_url: mediaType !== "application/pdf" ? {
+                  url: `data:${mediaType};base64,${base64}`
+                } : undefined
               }
             ],
           },
@@ -163,6 +167,6 @@ No incluyas etiquetas de \`\`\`json ni nada de texto adicional.`;
   } catch (error: any) {
     console.error("[analizar-pdf] Error general:", error);
     const detail = error.text || error.message;
-    return Response.json({ error: error.message || "Error inesperado al procesar el PDF.", detail }, { status: 500 });
+    return Response.json({ error: error.message || "Error inesperado al procesar el archivo.", detail }, { status: 500 });
   }
 }
