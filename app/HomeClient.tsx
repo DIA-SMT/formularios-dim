@@ -7,25 +7,22 @@ import { FormCard } from "@/components/public/FormCard";
 import type { Form } from "@/lib/data";
 
 export function HomeClient({ publishedForms }: { publishedForms: Form[] }) {
-  const [query, setQuery] = useState("");
-
-  const filtered = publishedForms.filter(
-    (f) =>
-      f.name.toLowerCase().includes(query.toLowerCase()) ||
-      f.area.toLowerCase().includes(query.toLowerCase()) ||
-      f.code.toLowerCase().includes(query.toLowerCase())
-  );
+  const filtered = publishedForms;
 
   return (
     <>
       <section
-        className="py-14 px-4"
-        style={{
-          background:
-            "linear-gradient(135deg, oklch(0.22 0.05 245) 0%, oklch(0.32 0.1 245) 100%)",
-        }}
+        className="relative py-8 px-4 overflow-hidden"
       >
-        <div className="max-w-3xl mx-auto text-center space-y-4">
+        {/* Background Image & Gradient Overlays */}
+        <div 
+          className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/puente.jpg')" }}
+        />
+        <div className="absolute inset-0 z-0 bg-primary/40 mix-blend-multiply" />
+        <div className="absolute inset-0 z-0 bg-gradient-to-t from-primary via-primary/80 to-transparent opacity-90" />
+        
+        <div className="relative z-10 max-w-3xl mx-auto text-center space-y-3">
           <div className="inline-flex items-center gap-2 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full border border-white/20">
             <Shield className="w-3.5 h-3.5" />
             Trámites municipales oficiales
@@ -33,22 +30,12 @@ export function HomeClient({ publishedForms }: { publishedForms: Form[] }) {
           <h1 className="text-3xl md:text-4xl font-bold text-white text-balance leading-tight">
             Formularios Digitales
             <br />
-            <span className="text-white/80">Municipalidad de San Martín</span>
+            <span className="text-white/90">Municipalidad de San Miguel de Tucumán</span>
           </h1>
-          <p className="text-white/75 text-base max-w-xl mx-auto leading-relaxed">
+          <p className="text-white text-base font-medium max-w-xl mx-auto leading-relaxed">
             Complete sus trámites municipales de forma online, sin necesidad de
             descargar ni imprimir documentos.
           </p>
-
-          <div className="relative max-w-md mx-auto mt-6">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar formulario por nombre, código o área..."
-              className="pl-9 bg-white border-white/20 text-foreground placeholder:text-muted-foreground h-11 shadow-sm"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-          </div>
         </div>
       </section>
 
@@ -69,7 +56,7 @@ export function HomeClient({ publishedForms }: { publishedForms: Form[] }) {
       </div>
 
       {/* Forms listing */}
-      <main className="flex-1 px-4 py-10" id="formularios">
+      <main className="flex-1 px-4 py-6" id="formularios">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
