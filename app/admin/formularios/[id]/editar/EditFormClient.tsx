@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import type { Form, FieldType } from "@/lib/data";
 import { updateForm } from "@/app/actions/forms";
+import { SortableFieldList } from "@/components/admin/SortableFieldList";
 
 const FIELD_TYPE_LABELS: Record<FieldType, string> = {
   text: "Texto corto",
@@ -101,6 +102,12 @@ export function EditFormClient({ form }: { form: Form }) {
     );
   };
 
+  const updateField = (id: string, updates: Partial<BuilderField>) => {
+    setFields((prev) =>
+      prev.map((f) => (f.id === id ? { ...f, ...updates } : f))
+    );
+  };
+
   const handleSave = (publish: boolean) => {
     startTransition(async () => {
       const dataToSave = {
@@ -134,13 +141,6 @@ export function EditFormClient({ form }: { form: Form }) {
       }
     });
   };
-
-  // Group fields by section for the preview
-  const sections = fields.reduce<Record<string, BuilderField[]>>((acc, f) => {
-    if (!acc[f.section]) acc[f.section] = [];
-    acc[f.section].push(f);
-    return acc;
-  }, {});
 
   return (
     <div className="space-y-6 pb-24 md:pb-0 max-w-4xl">
@@ -383,76 +383,13 @@ export function EditFormClient({ form }: { form: Form }) {
               </div>
             </CardHeader>
             <CardContent>
-              {fields.length === 0 ? (
-                <div className="text-center py-10 border-2 border-dashed border-border rounded-lg space-y-2">
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Sin campos aún
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Agrega campos manualmente arriba.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {Object.entries(sections).map(
-                    ([sectionName, sectionFields]) => (
-                      <div key={sectionName}>
-                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
-                          {sectionName}
-                        </p>
-                        <div className="space-y-2">
-                          {sectionFields.map((field) => (
-                            <div
-                              key={field.id}
-                              className="flex items-center gap-3 p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/40 transition-colors"
-                            >
-                              <GripVertical className="w-4 h-4 text-muted-foreground shrink-0 cursor-grab" />
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <p className="text-sm font-medium text-foreground">
-                                    {field.label}
-                                  </p>
-                                  <Badge
-                                    variant="outline"
-                                    className="text-xs font-mono"
-                                  >
-                                    {FIELD_TYPE_LABELS[field.type]}
-                                  </Badge>
-                                  {field.options &&
-                                    field.options.length > 0 && (
-                                      <span className="text-xs text-muted-foreground">
-                                        ({field.options.join(", ")})
-                                      </span>
-                                    )}
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-3 shrink-0">
-                                <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer select-none">
-                                  <input
-                                    type="checkbox"
-                                    checked={field.required}
-                                    onChange={() => toggleRequired(field.id)}
-                                    className="accent-primary"
-                                  />
-                                  Requerido
-                                </label>
-                                <button
-                                  type="button"
-                                  onClick={() => removeField(field.id)}
-                                  className="text-muted-foreground hover:text-destructive transition-colors"
-                                  aria-label="Eliminar campo"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )
-                  )}
-                </div>
-              )}
+              <SortableFieldList
+                fields={fields}
+                setFields={setFields}
+                removeField={removeField}
+                toggleRequired={toggleRequired}
+                onUpdateField={updateField}
+              />
             </CardContent>
           </Card>
         </div>
