@@ -22,7 +22,7 @@ export function ResponseActions({
   };
 
   return (
-    <Card className="border-border relative overflow-hidden">
+    <Card className="border-border relative overflow-hidden print:hidden">
       {isPending && (
         <div className="absolute inset-0 bg-background/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
           <Loader2 className="w-6 h-6 animate-spin text-primary" />

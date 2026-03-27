@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getResponse } from "@/app/actions/responses";
 import { ResponseActions } from "./ResponseActions";
+import { PdfDownloadButton } from "./PdfDownloadButton";
 
 const statusConfig: Record<
   string,
@@ -82,7 +83,7 @@ export default async function RespuestaDetailPage({
   return (
     <div className="space-y-6 pb-20 md:pb-0 max-w-4xl">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 print:hidden">
         <Link href="/admin/respuestas">
           <Button variant="ghost" size="sm" className="gap-1.5">
             <ChevronLeft className="w-4 h-4" />
@@ -105,10 +106,13 @@ export default async function RespuestaDetailPage({
             {response.tramiteCode}
           </p>
         </div>
-        <Button variant="outline" size="sm" className="gap-2 shrink-0">
-          <Download className="w-4 h-4" />
-          Descargar PDF
-        </Button>
+        <PdfDownloadButton />
+      </div>
+
+      {/* Print-only Header (replaces the interactive one) */}
+      <div className="hidden print:block mb-8">
+        <h1 className="text-2xl font-bold">Detalle de Respuesta - {response.tramiteCode}</h1>
+        <p className="text-sm text-muted-foreground mt-1">Estado: {status.label}</p>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-3">

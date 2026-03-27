@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Save, Building2, Mail, Globe, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +21,36 @@ export default function ConfiguracionPage() {
   const [notifResumen, setNotifResumen] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  useEffect(() => {
+    const savedConfig = localStorage.getItem("dim_config");
+    if (savedConfig) {
+      try {
+        const config = JSON.parse(savedConfig);
+        if (config.municipio) setMunicipio(config.municipio);
+        if (config.provincia) setProvincia(config.provincia);
+        if (config.emailGeneral) setEmailGeneral(config.emailGeneral);
+        if (config.sitioWeb) setSitioWeb(config.sitioWeb);
+        if (config.footer) setFooter(config.footer);
+        setNotifEmail(config.notifEmail ?? true);
+        setNotifResumen(config.notifResumen ?? false);
+      } catch (e) {
+        console.error("Error loading config", e);
+      }
+    }
+  }, []);
+
   const handleSave = () => {
+    const config = {
+      municipio,
+      provincia,
+      emailGeneral,
+      sitioWeb,
+      footer,
+      notifEmail,
+      notifResumen
+    };
+    localStorage.setItem("dim_config", JSON.stringify(config));
+    
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   };

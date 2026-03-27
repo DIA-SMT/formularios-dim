@@ -28,10 +28,10 @@ export function AdminSidebar() {
   return (
     <aside
       className={cn(
-        "hidden md:flex flex-col shrink-0 transition-all duration-200",
+        "hidden md:flex flex-col shrink-0 transition-all duration-200 h-screen sticky top-0 overflow-y-auto print:hidden",
         collapsed ? "w-16" : "w-56"
       )}
-      style={{ background: "var(--sidebar)", minHeight: "100vh" }}
+      style={{ background: "var(--sidebar)" }}
     >
       {/* Logo */}
       <div

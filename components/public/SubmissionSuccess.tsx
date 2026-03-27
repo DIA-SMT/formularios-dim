@@ -63,7 +63,7 @@ export function SubmissionSuccess({
           Recibirá novedades en el correo electrónico que indicó en el formulario.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center print:hidden">
           <Button
             variant="outline"
             className="gap-2"

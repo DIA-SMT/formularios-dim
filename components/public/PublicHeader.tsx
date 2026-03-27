@@ -10,7 +10,7 @@ export function PublicHeader() {
 
   return (
     <header
-      className="w-full"
+      className="w-full print:hidden"
       style={{ background: "var(--header-bg)", color: "var(--header-foreground)" }}
     >
       {/* Top bar */}
