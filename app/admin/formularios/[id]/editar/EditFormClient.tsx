@@ -27,10 +27,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Form, FieldType } from "@/lib/data";
+import type { Form, FieldType, TableColumn } from "@/lib/data";
 import { createForm, updateForm } from "@/app/actions/forms";
 import { SortableFieldList } from "@/components/admin/SortableFieldList";
 import { InfoImageEditor } from "@/components/admin/InfoImageEditor";
+import { TableColumnEditor } from "@/components/admin/TableColumnEditor";
 
 const FIELD_TYPE_LABELS: Record<FieldType, string> = {
   text: "Texto corto",
@@ -55,6 +56,7 @@ interface BuilderField {
   section: string;
   options?: string[];
   imageUrl?: string;
+  columns?: TableColumn[];
 }
 
 export function EditFormClient({ form }: { form: Form }) {
@@ -81,6 +83,7 @@ export function EditFormClient({ form }: { form: Form }) {
   const [newFieldSectionMode, setNewFieldSectionMode] = useState<"existing" | "new">("existing");
   const [newFieldSectionCustom, setNewFieldSectionCustom] = useState("");
   const [newFieldImageUrl, setNewFieldImageUrl] = useState<string | undefined>(undefined);
+  const [newFieldColumns, setNewFieldColumns] = useState<TableColumn[]>([]);
   const [activeTab, setActiveTab] = useState<"info" | "campos">("info");
 
   // Secciones únicas derivadas de los campos actuales
@@ -102,6 +105,7 @@ export function EditFormClient({ form }: { form: Form }) {
       required: false,
       section,
       imageUrl: newFieldImageUrl,
+      columns: newFieldType === "table" ? newFieldColumns : undefined,
     };
     setFields((prev) => {
       // Insertar justo después del último campo de la misma sección
@@ -119,6 +123,7 @@ export function EditFormClient({ form }: { form: Form }) {
     });
     setNewFieldLabel("");
     setNewFieldImageUrl(undefined);
+    setNewFieldColumns([]);
     if (newFieldSectionMode === "new" && newFieldSectionCustom.trim()) {
       setNewFieldSection(newFieldSectionCustom.trim());
       setNewFieldSectionMode("existing");
@@ -428,11 +433,29 @@ export function EditFormClient({ form }: { form: Form }) {
                 </div>
               )}
 
+              {newFieldType === "table" && (
+                <div className="mt-4 border-t pt-4 space-y-2 animate-in fade-in slide-in-from-top-1">
+                  <Label className="text-sm font-medium block">
+                    Estructura de la tabla
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Definí las columnas que tendrá la tabla. Podés importarlas directo desde Excel.
+                  </p>
+                  <TableColumnEditor
+                    columns={newFieldColumns}
+                    onChange={setNewFieldColumns}
+                  />
+                </div>
+              )}
+
               <Button
                 type="button"
                 className="mt-4 gap-2 w-full sm:w-auto"
                 onClick={addField}
-                disabled={newFieldType === "info_image" && !newFieldImageUrl}
+                disabled={
+                  (newFieldType === "info_image" && !newFieldImageUrl) ||
+                  (newFieldType === "table" && newFieldColumns.length === 0)
+                }
               >
                 <Plus className="w-4 h-4" />
                 Agregar campo

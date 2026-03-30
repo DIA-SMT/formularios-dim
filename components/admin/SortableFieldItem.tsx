@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Trash2, Edit2, ImageIcon } from "lucide-react";
+import { GripVertical, Trash2, Edit2, ImageIcon, Columns3 } from "lucide-react";
 import { InfoImageEditor } from "./InfoImageEditor";
+import { TableColumnEditor } from "./TableColumnEditor";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -22,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import type { FieldType } from "@/lib/data";
+import type { FieldType, TableColumn } from "@/lib/data";
 
 const FIELD_TYPE_LABELS: Record<FieldType, string> = {
   text: "Texto corto",
@@ -47,6 +48,7 @@ interface BuilderField {
   section: string;
   options?: string[];
   imageUrl?: string;
+  columns?: TableColumn[];
 }
 
 interface SortableFieldItemProps {
@@ -81,6 +83,7 @@ export function SortableFieldItem({
   const [sectionMode, setSectionMode] = useState<"existing" | "new">("existing");
   const [newSectionName, setNewSectionName] = useState("");
   const [editImageUrl, setEditImageUrl] = useState<string | undefined>(field.imageUrl);
+  const [editColumns, setEditColumns] = useState<TableColumn[]>(field.columns ?? []);
 
   const handleOpenEdit = (open: boolean) => {
     setIsEditing(open);
@@ -90,6 +93,7 @@ export function SortableFieldItem({
       setSectionMode("existing");
       setNewSectionName("");
       setEditImageUrl(field.imageUrl);
+      setEditColumns(field.columns ?? []);
     }
   };
 
@@ -101,6 +105,7 @@ export function SortableFieldItem({
         label: editLabel,
         section: finalSection,
         imageUrl: editImageUrl,
+        columns: field.type === "table" ? editColumns : undefined,
       });
     }
     setIsEditing(false);
@@ -140,6 +145,15 @@ export function SortableFieldItem({
           </Badge>
           {field.type === "info_image" && field.imageUrl && (
             <ImageIcon className="w-3 h-3 text-primary shrink-0" />
+          )}
+          {field.type === "table" && field.columns && field.columns.length > 0 && (
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Columns3 className="w-3 h-3" />
+              {field.columns.length} col.: {field.columns.map((c) => c.label).join(", ")}
+            </span>
+          )}
+          {field.type === "table" && (!field.columns || field.columns.length === 0) && (
+            <span className="text-xs text-amber-600 font-medium">⚠ Sin columnas</span>
           )}
           {field.options && field.options.length > 0 && (
             <span className="text-xs text-muted-foreground">
@@ -226,6 +240,19 @@ export function SortableFieldItem({
                     <p className="text-[10px] text-muted-foreground italic">
                       Pegá una captura (Ctrl+V) o seleccioná un archivo. Esta imagen aparecerá sola o con el texto en el formulario público.
                     </p>
+                  </div>
+                )}
+
+                {field.type === "table" && (
+                  <div className="space-y-2">
+                    <Label>Estructura de la tabla</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Editá las columnas. Podés importar desde Excel o agregar manualmente.
+                    </p>
+                    <TableColumnEditor
+                      columns={editColumns}
+                      onChange={setEditColumns}
+                    />
                   </div>
                 )}
               </div>

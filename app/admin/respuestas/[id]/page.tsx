@@ -56,8 +56,23 @@ export default async function RespuestaDetailPage({
   const status = statusConfig[response.status] || statusConfig.pendiente;
   const StatusIcon = status.icon;
 
-  const dataEntries = Object.entries(response.data as Record<string, unknown>).filter(
-    ([key]) => key !== "tabla_ddjj"
+  const rawData = response.data as Record<string, unknown>;
+
+  // Separate signature fields embedded in data (data:image/...) from normal fields
+  const isDataUrl = (v: unknown): v is string =>
+    typeof v === "string" && v.startsWith("data:");
+
+  const isTableRows = (v: unknown): boolean =>
+    Array.isArray(v) && v.length > 0 && typeof v[0] === "object";
+
+  // Embedded signatures stored in data (e.g. key === "firma" or "firma_hab")
+  const embeddedSignatures = Object.entries(rawData).filter(([, v]) =>
+    isDataUrl(v)
+  );
+
+  // Filter out data-URL fields and keep meaningful fields for display
+  const dataEntries = Object.entries(rawData).filter(
+    ([, value]) => !isDataUrl(value)
   );
 
   const fieldLabels: Record<string, string> = {
@@ -79,6 +94,14 @@ export default async function RespuestaDetailPage({
     superficie: "Superficie (m²)",
     fecha_solicitud: "Fecha de Solicitud",
   };
+
+  // Determine the best signature image: prefer response.signature, then embedded data ones
+  const signatureImage =
+    response.signature && !response.signature.startsWith("data:image/png;base64,mock")
+      ? response.signature
+      : embeddedSignatures.length > 0
+      ? String(embeddedSignatures[0][1])
+      : null;
 
   return (
     <div className="space-y-6 pb-20 md:pb-0 max-w-4xl">
@@ -146,25 +169,65 @@ export default async function RespuestaDetailPage({
             </CardHeader>
             <CardContent>
               <dl className="divide-y divide-border">
-                {dataEntries.map(([key, value]) => (
-                  <div
-                    key={key}
-                    className="grid grid-cols-2 gap-4 py-3 first:pt-0 last:pb-0"
-                  >
-                    <dt className="text-xs text-muted-foreground">
-                      {fieldLabels[key] ?? key}
-                    </dt>
-                    <dd className="text-sm text-foreground font-medium capitalize">
-                      {String(value)}
-                    </dd>
-                  </div>
-                ))}
+                {dataEntries.map(([key, value]) => {
+                  const label = fieldLabels[key] ?? key;
+
+                  // Table rows → render as a scrollable mini-table
+                  if (isTableRows(value)) {
+                    const rows = value as Record<string, unknown>[];
+                    const cols = Object.keys(rows[0]);
+                    return (
+                      <div key={key} className="py-3 first:pt-0 last:pb-0 space-y-2">
+                        <dt className="text-xs text-muted-foreground">{label}</dt>
+                        <dd>
+                          <div className="overflow-x-auto rounded-md border border-border">
+                            <table className="w-full text-xs min-w-[400px]">
+                              <thead>
+                                <tr className="bg-muted/60">
+                                  {cols.map((col) => (
+                                    <th key={col} className="px-3 py-2 text-left font-semibold text-foreground border-b border-border whitespace-nowrap">
+                                      {col}
+                                    </th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {rows.map((row, i) => (
+                                  <tr key={i} className="border-b border-border last:border-b-0 hover:bg-muted/30">
+                                    {cols.map((col) => (
+                                      <td key={col} className="px-3 py-2 text-foreground">
+                                        {String(row[col] ?? "")}
+                                      </td>
+                                    ))}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </dd>
+                      </div>
+                    );
+                  }
+
+                  // Normal scalar value
+                  return (
+                    <div
+                      key={key}
+                      className="grid grid-cols-2 gap-4 py-3 first:pt-0 last:pb-0"
+                    >
+                      <dt className="text-xs text-muted-foreground">{label}</dt>
+                      <dd className="text-sm text-foreground font-medium break-words">
+                        {String(value)}
+                      </dd>
+                    </div>
+                  );
+                })}
               </dl>
             </CardContent>
           </Card>
 
           {/* Signature */}
-          {response.signature && (
+          {(signatureImage || response.signature) && (
             <Card className="border-border">
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2">
@@ -173,12 +236,21 @@ export default async function RespuestaDetailPage({
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="border-2 border-dashed border-border rounded-lg p-4 bg-muted/20">
-                  <div className="h-28 flex items-center justify-center">
-                    <p className="text-sm text-muted-foreground italic">
-                      [Firma manuscrita capturada digitalmente]
-                    </p>
-                  </div>
+                <div className="border border-border rounded-lg p-3 bg-white">
+                  {signatureImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={signatureImage}
+                      alt={`Firma de ${response.citizenName}`}
+                      className="max-h-36 max-w-full object-contain mx-auto block"
+                    />
+                  ) : (
+                    <div className="h-28 flex items-center justify-center">
+                      <p className="text-sm text-muted-foreground italic">
+                        [Firma registrada — imagen no disponible]
+                      </p>
+                    </div>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
                   Firma del solicitante — {response.citizenName}

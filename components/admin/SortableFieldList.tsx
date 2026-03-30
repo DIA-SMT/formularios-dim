@@ -19,7 +19,7 @@ import {
 import { Sparkles, ChevronUp, ChevronDown } from "lucide-react";
 import { SortableFieldItem } from "./SortableFieldItem";
 import { Button } from "@/components/ui/button";
-import type { FieldType } from "@/lib/data";
+import type { FieldType, TableColumn } from "@/lib/data";
 
 interface BuilderField {
   id: string;
@@ -28,6 +28,8 @@ interface BuilderField {
   required: boolean;
   section: string;
   options?: string[];
+  imageUrl?: string;
+  columns?: TableColumn[];
 }
 
 interface SortableFieldListProps {
