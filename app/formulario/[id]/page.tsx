@@ -149,8 +149,17 @@ export default function FormularioPage({ params }: PageProps) {
   const sections = form ? groupBySections(form.fields) : {};
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <PublicHeader />
+    <div className="relative min-h-screen flex flex-col">
+      {/* Background Image */}
+      <div 
+        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat pointer-events-none"
+        style={{ backgroundImage: "url('/puente.jpg')" }}
+      />
+      <div className="fixed inset-0 z-0 bg-primary/20 mix-blend-multiply pointer-events-none" />
+      <div className="fixed inset-0 z-0 bg-gradient-to-b from-background/30 via-background/80 to-background pointer-events-none" />
+      
+      <div className="relative z-10 flex flex-col flex-1">
+        <PublicHeader />
 
       {/* Breadcrumb */}
       <div className="bg-white border-b border-border px-4 py-3 print:hidden">
@@ -278,6 +287,7 @@ export default function FormularioPage({ params }: PageProps) {
           </form>
         </div>
       </main>
+      </div>
     </div>
   );
 }
