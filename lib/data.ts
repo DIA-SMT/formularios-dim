@@ -9,7 +9,8 @@ export type FieldType =
   | "email"
   | "file"
   | "signature"
-  | "table";
+  | "table"
+  | "info_image"; // Imagen/instructivo de solo lectura embebido en el formulario
 
 export interface SelectOption {
   label: string;
@@ -33,6 +34,8 @@ export interface FormField {
   columns?: TableColumn[];
   description?: string;
   section?: string;
+  /** Data-URL de la imagen embebida (solo para type === "info_image") */
+  imageUrl?: string;
 }
 
 export interface Form {

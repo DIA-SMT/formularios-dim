@@ -139,3 +139,157 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* =====================================================
+   ESTILOS DE IMPRESIÓN — Formulario completo
+   ===================================================== */
+@media print {
+  /* Página A4 con márgenes */
+  @page {
+    size: A4;
+    margin: 18mm 15mm 18mm 15mm;
+  }
+
+  /* Reset general para impresión */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 11pt !important;
+    font-family: Arial, Helvetica, sans-serif !important;
+  }
+
+  /* Ocultar elementos de navegación / UI */
+  .print\:hidden,
+  header,
+  nav,
+  [class*="PublicHeader"],
+  [class*="AdminSidebar"],
+  [class*="breadcrumb"],
+  button[type="submit"],
+  button[type="button"],
+  .no-print { display: none !important; }
+
+  /* Quitar sombras y bordes decorativos de cards */
+  .card, [class*="Card"] {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+    break-inside: avoid;
+    margin-bottom: 12pt !important;
+  }
+
+  /* Encabezados de sección */
+  [class*="CardHeader"] {
+    background: #f0f0f0 !important;
+    padding: 6pt 10pt !important;
+  }
+  [class*="CardTitle"] {
+    font-size: 11pt !important;
+    font-weight: bold !important;
+    color: black !important;
+  }
+
+  /* Etiquetas de campo */
+  label {
+    font-size: 9pt !important;
+    font-weight: 600 !important;
+    color: #333 !important;
+    display: block !important;
+    margin-bottom: 2pt !important;
+  }
+
+  /* Inputs de texto: mostramos el valor como texto subrayado */
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="date"],
+  textarea,
+  select {
+    border: none !important;
+    border-bottom: 1px solid #555 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 2pt 0 !important;
+    width: 100% !important;
+    font-size: 10pt !important;
+    color: black !important;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  textarea {
+    min-height: 40pt !important;
+    resize: none !important;
+  }
+
+  /* Ocultar placeholders */
+  input::placeholder, textarea::placeholder { color: transparent !important; }
+
+  /* Imágenes pegadas: mostrarlas completas sin truncar */
+  .print-img,
+  img {
+    max-width: 100% !important;
+    max-height: 200pt !important;
+    height: auto !important;
+    display: block !important;
+    margin: 4pt auto !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Ocultar botón de quitar imagen y leyenda de pegado */
+  [title="Quitar imagen"],
+  kbd { display: none !important; }
+
+  /* Firma */
+  canvas { max-width: 100% !important; height: auto !important; }
+
+  /* Tablas editables */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 9pt !important;
+  }
+  th, td {
+    border: 1px solid #999 !important;
+    padding: 3pt 5pt !important;
+  }
+  th { background: #eee !important; font-weight: bold !important; }
+
+  /* Badges y chips: solo texto */
+  [class*="Badge"] {
+    border: 1px solid #999 !important;
+    background: transparent !important;
+    color: black !important;
+    font-size: 8pt !important;
+  }
+
+  /* Aviso legal (DDJJ): visible en impresión */
+  [class*="bg-muted"] {
+    background: #f9f9f9 !important;
+    border: 1px solid #ddd !important;
+  }
+
+  /* Radio / checkbox: empujar al medio */
+  input[type="radio"], input[type="checkbox"] {
+    width: 10pt !important;
+    height: 10pt !important;
+    margin-right: 4pt !important;
+    vertical-align: middle !important;
+    accent-color: black !important;
+  }
+
+  /* Evitar cortes de página dentro de un campo */
+  .space-y-5 > * { break-inside: avoid; }
+
+  /* Número de página */
+  .page-number::after {
+    content: counter(page) " / " counter(pages);
+  }
+}
+

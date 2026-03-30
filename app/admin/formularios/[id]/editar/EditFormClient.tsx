@@ -28,8 +28,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Form, FieldType } from "@/lib/data";
-import { updateForm } from "@/app/actions/forms";
+import { createForm, updateForm } from "@/app/actions/forms";
 import { SortableFieldList } from "@/components/admin/SortableFieldList";
+import { InfoImageEditor } from "@/components/admin/InfoImageEditor";
 
 const FIELD_TYPE_LABELS: Record<FieldType, string> = {
   text: "Texto corto",
@@ -43,6 +44,7 @@ const FIELD_TYPE_LABELS: Record<FieldType, string> = {
   file: "Archivo adjunto",
   signature: "Firma manuscrita",
   table: "Tabla editable (DDJJ)",
+  info_image: "Imagen informativa (solo lectura)",
 };
 
 interface BuilderField {
@@ -52,6 +54,7 @@ interface BuilderField {
   required: boolean;
   section: string;
   options?: string[];
+  imageUrl?: string;
 }
 
 export function EditFormClient({ form }: { form: Form }) {
@@ -75,21 +78,52 @@ export function EditFormClient({ form }: { form: Form }) {
   const [newFieldType, setNewFieldType] = useState<FieldType>("text");
   const [newFieldLabel, setNewFieldLabel] = useState("");
   const [newFieldSection, setNewFieldSection] = useState("General");
+  const [newFieldSectionMode, setNewFieldSectionMode] = useState<"existing" | "new">("existing");
+  const [newFieldSectionCustom, setNewFieldSectionCustom] = useState("");
+  const [newFieldImageUrl, setNewFieldImageUrl] = useState<string | undefined>(undefined);
   const [activeTab, setActiveTab] = useState<"info" | "campos">("info");
 
+  // Secciones únicas derivadas de los campos actuales
+  const existingSections = [...new Set(fields.map((f) => f.section))].filter(Boolean);
+
   const addField = () => {
-    if (!newFieldLabel.trim()) return;
-    setFields((prev) => [
-      ...prev,
-      {
-        id: `field-${Date.now()}`,
-        type: newFieldType,
-        label: newFieldLabel.trim(),
-        required: false,
-        section: newFieldSection || "General",
-      },
-    ]);
+    // Si es imagen informativa, permitimos etiqueta vacía (usamos default)
+    if (!newFieldLabel.trim() && newFieldType !== "info_image") return;
+    
+    const finalLabel = newFieldLabel.trim() || (newFieldType === "info_image" ? "Imagen informativa" : "");
+    const section =
+      newFieldSectionMode === "new"
+        ? newFieldSectionCustom.trim() || "General"
+        : newFieldSection;
+    const newField: BuilderField = {
+      id: `field-${Date.now()}`,
+      type: newFieldType,
+      label: finalLabel,
+      required: false,
+      section,
+      imageUrl: newFieldImageUrl,
+    };
+    setFields((prev) => {
+      // Insertar justo después del último campo de la misma sección
+      let lastIdx = -1;
+      for (let i = prev.length - 1; i >= 0; i--) {
+        if (prev[i].section === section) { lastIdx = i; break; }
+      }
+      if (lastIdx === -1) {
+        // Sección nueva: agregar al final
+        return [...prev, newField];
+      }
+      const copy = [...prev];
+      copy.splice(lastIdx + 1, 0, newField);
+      return copy;
+    });
     setNewFieldLabel("");
+    setNewFieldImageUrl(undefined);
+    if (newFieldSectionMode === "new" && newFieldSectionCustom.trim()) {
+      setNewFieldSection(newFieldSectionCustom.trim());
+      setNewFieldSectionMode("existing");
+      setNewFieldSectionCustom("");
+    }
   };
 
   const removeField = (id: string) => {
@@ -351,18 +385,54 @@ export function EditFormClient({ form }: { form: Form }) {
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Sección</Label>
-                  <Input
-                    value={newFieldSection}
-                    onChange={(e) => setNewFieldSection(e.target.value)}
-                    placeholder="Ej: Datos del contribuyente"
-                  />
+                  <Select
+                    value={newFieldSectionMode === "new" ? "__new__" : newFieldSection}
+                    onValueChange={(val) => {
+                      if (val === "__new__") {
+                        setNewFieldSectionMode("new");
+                        setNewFieldSectionCustom("");
+                      } else {
+                        setNewFieldSectionMode("existing");
+                        setNewFieldSection(val);
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sección" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(existingSections.length > 0 ? existingSections : ["General"]).map((s) => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
+                      <SelectItem value="__new__">➕ Nueva sección…</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {newFieldSectionMode === "new" && (
+                    <Input
+                      className="mt-2"
+                      value={newFieldSectionCustom}
+                      onChange={(e) => setNewFieldSectionCustom(e.target.value)}
+                      placeholder="Nombre de la nueva sección"
+                      autoFocus
+                    />
+                  )}
                 </div>
               </div>
+
+              {newFieldType === "info_image" && (
+                <div className="mt-4 border-t pt-4">
+                  <Label className="text-sm font-medium mb-2 block animate-in fade-in slide-in-from-top-1">
+                    Pegar imagen informativa / instructivo
+                  </Label>
+                  <InfoImageEditor value={newFieldImageUrl} onChange={setNewFieldImageUrl} />
+                </div>
+              )}
+
               <Button
                 type="button"
-                className="mt-3 gap-2"
-                size="sm"
+                className="mt-4 gap-2 w-full sm:w-auto"
                 onClick={addField}
+                disabled={newFieldType === "info_image" && !newFieldImageUrl}
               >
                 <Plus className="w-4 h-4" />
                 Agregar campo
