@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -13,8 +14,8 @@ import {
 } from "@/components/ui/select";
 import { SignaturePad } from "./SignaturePad";
 import { EditableTableField } from "./EditableTableField";
+import { ClipboardPaste, X, ImageIcon } from "lucide-react";
 import type { FormField } from "@/lib/data";
-
 interface DynamicFieldRendererProps {
   field: FormField;
   value: unknown;
@@ -29,6 +30,7 @@ export function DynamicFieldRenderer({
   error,
 }: DynamicFieldRendererProps) {
   const inputClass = `${error ? "border-destructive focus-visible:ring-destructive/30" : ""}`;
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const renderInput = () => {
     switch (field.type) {
@@ -79,7 +81,7 @@ export function DynamicFieldRenderer({
               <SelectValue placeholder="Seleccione una opción" />
             </SelectTrigger>
             <SelectContent>
-              {field.options?.map((opt) => (
+              {field.options?.map((opt: { value: string; label: string }) => (
                 <SelectItem key={opt.value} value={opt.value}>
                   {opt.label}
                 </SelectItem>
@@ -91,7 +93,7 @@ export function DynamicFieldRenderer({
       case "radio":
         return (
           <div className="flex flex-wrap gap-x-6 gap-y-2 pt-1">
-            {field.options?.map((opt) => (
+            {field.options?.map((opt: { value: string; label: string }) => (
               <label
                 key={opt.value}
                 className="flex items-center gap-2 cursor-pointer"
@@ -169,10 +171,35 @@ export function DynamicFieldRenderer({
           />
         );
 
+      case "info_image":
+        // Solo lectura: imagen embebida por el admin
+        return field.imageUrl ? (
+          <img
+            src={field.imageUrl}
+            alt={field.label || "Imagen informativa"}
+            className="w-full rounded-md border border-border object-contain max-h-[500px]"
+          />
+        ) : null;
+
       default:
         return null;
     }
   };
+
+  // info_image no necesita input — se renderiza completo directamente
+  if (field.type === "info_image") {
+    return (
+      <div className="space-y-2">
+        {field.label && (
+          <p className="text-sm font-semibold text-foreground">{field.label}</p>
+        )}
+        {field.description && (
+          <p className="text-xs text-muted-foreground">{field.description}</p>
+        )}
+        {renderInput()}
+      </div>
+    );
+  }
 
   if (field.type === "checkbox") {
     return (

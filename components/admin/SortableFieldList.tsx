@@ -63,20 +63,9 @@ export function SortableFieldList({
       setFields((items) => {
         const oldIndex = items.findIndex((item) => item.id === active.id);
         const newIndex = items.findIndex((item) => item.id === over.id);
-
-        let newItems = arrayMove(items, oldIndex, newIndex);
-
-        // Inherit the section from the item that currently occupies the target position
-        // This ensures moving an item across sections automatically assigns it to the new section
-        const targetSection = items[newIndex]?.section;
-        if (targetSection && newItems[newIndex].section !== targetSection) {
-          newItems[newIndex] = {
-            ...newItems[newIndex],
-            section: targetSection,
-          };
-        }
-
-        return newItems;
+        // Solo reordena posición; el campo conserva su sección original.
+        // Para cambiar de sección usar el botón Editar de cada campo.
+        return arrayMove(items, oldIndex, newIndex);
       });
     }
   };
@@ -125,6 +114,12 @@ export function SortableFieldList({
       return newItems;
     });
   };
+
+  // Lista de secciones únicas (en orden de aparición) para el selector de edición
+  const uniqueSections = useMemo(
+    () => [...new Set(fields.map((f) => f.section))],
+    [fields]
+  );
 
   // Chunk array linearly by section changes.
   // This allows correct visual rendering while maintaining standard sorting behavior on the 1D flat array mapping.
@@ -213,6 +208,7 @@ export function SortableFieldList({
                     onRemove={removeField}
                     onToggleRequired={toggleRequired}
                     onUpdate={onUpdateField}
+                    availableSections={uniqueSections}
                   />
                 ))}
               </div>

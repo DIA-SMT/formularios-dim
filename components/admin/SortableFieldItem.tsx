@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Trash2, Edit2 } from "lucide-react";
+import { GripVertical, Trash2, Edit2, ImageIcon } from "lucide-react";
+import { InfoImageEditor } from "./InfoImageEditor";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -11,6 +12,13 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -28,6 +36,7 @@ const FIELD_TYPE_LABELS: Record<FieldType, string> = {
   file: "Archivo adjunto",
   signature: "Firma manuscrita",
   table: "Tabla editable (DDJJ)",
+  info_image: "Imagen informativa (solo lectura)",
 };
 
 interface BuilderField {
@@ -37,6 +46,7 @@ interface BuilderField {
   required: boolean;
   section: string;
   options?: string[];
+  imageUrl?: string;
 }
 
 interface SortableFieldItemProps {
@@ -44,6 +54,8 @@ interface SortableFieldItemProps {
   onRemove: (id: string) => void;
   onToggleRequired: (id: string) => void;
   onUpdate?: (id: string, updates: Partial<BuilderField>) => void;
+  /** Lista de secciones existentes para el selector */
+  availableSections?: string[];
 }
 
 export function SortableFieldItem({
@@ -51,6 +63,7 @@ export function SortableFieldItem({
   onRemove,
   onToggleRequired,
   onUpdate,
+  availableSections = [],
 }: SortableFieldItemProps) {
   const {
     attributes,
@@ -64,10 +77,31 @@ export function SortableFieldItem({
   const [isEditing, setIsEditing] = useState(false);
   const [editLabel, setEditLabel] = useState(field.label);
   const [editSection, setEditSection] = useState(field.section);
+  // "__new__" es el valor especial para crear sección nueva
+  const [sectionMode, setSectionMode] = useState<"existing" | "new">("existing");
+  const [newSectionName, setNewSectionName] = useState("");
+  const [editImageUrl, setEditImageUrl] = useState<string | undefined>(field.imageUrl);
+
+  const handleOpenEdit = (open: boolean) => {
+    setIsEditing(open);
+    if (open) {
+      setEditLabel(field.label);
+      setEditSection(field.section);
+      setSectionMode("existing");
+      setNewSectionName("");
+      setEditImageUrl(field.imageUrl);
+    }
+  };
 
   const handleSaveEdit = () => {
+    const finalSection =
+      sectionMode === "new" ? newSectionName.trim() || editSection : editSection;
     if (onUpdate) {
-      onUpdate(field.id, { label: editLabel, section: editSection });
+      onUpdate(field.id, {
+        label: editLabel,
+        section: finalSection,
+        imageUrl: editImageUrl,
+      });
     }
     setIsEditing(false);
   };
@@ -104,6 +138,9 @@ export function SortableFieldItem({
           <Badge variant="outline" className="text-xs font-mono">
             {FIELD_TYPE_LABELS[field.type]}
           </Badge>
+          {field.type === "info_image" && field.imageUrl && (
+            <ImageIcon className="w-3 h-3 text-primary shrink-0" />
+          )}
           {field.options && field.options.length > 0 && (
             <span className="text-xs text-muted-foreground">
               ({field.options.join(", ")})
@@ -113,18 +150,20 @@ export function SortableFieldItem({
       </div>
 
       <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-        <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer select-none mr-2">
-          <input
-            type="checkbox"
-            checked={field.required}
-            onChange={() => onToggleRequired(field.id)}
-            className="accent-primary"
-          />
-          Req.
-        </label>
+        {field.type !== "info_image" && (
+          <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer select-none mr-2">
+            <input
+              type="checkbox"
+              checked={field.required}
+              onChange={() => onToggleRequired(field.id)}
+              className="accent-primary"
+            />
+            Req.
+          </label>
+        )}
 
         {onUpdate && (
-          <Dialog open={isEditing} onOpenChange={setIsEditing}>
+          <Dialog open={isEditing} onOpenChange={handleOpenEdit}>
             <DialogTrigger asChild>
               <button
                 type="button"
@@ -145,15 +184,59 @@ export function SortableFieldItem({
                 </div>
                 <div className="space-y-1.5">
                   <Label>Sección</Label>
-                  <Input value={editSection} onChange={e => setEditSection(e.target.value)} />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Si cambias este nombre a una sección que no existe, se creará automáticamente.
-                  </p>
+                  <Select
+                    value={sectionMode === "new" ? "__new__" : editSection}
+                    onValueChange={(val) => {
+                      if (val === "__new__") {
+                        setSectionMode("new");
+                      } else {
+                        setSectionMode("existing");
+                        setEditSection(val);
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar sección" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {/* Secciones ya existentes (únicas) */}
+                      {[...new Set([...availableSections, field.section])].map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {s}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="__new__">➕ Nueva sección…</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {sectionMode === "new" && (
+                    <Input
+                      className="mt-2"
+                      value={newSectionName}
+                      onChange={(e) => setNewSectionName(e.target.value)}
+                      placeholder="Nombre de la nueva sección"
+                      autoFocus
+                    />
+                  )}
                 </div>
+
+                {field.type === "info_image" && (
+                  <div className="space-y-2">
+                    <Label>Imagen informativa</Label>
+                    <InfoImageEditor value={editImageUrl} onChange={setEditImageUrl} />
+                    <p className="text-[10px] text-muted-foreground italic">
+                      Pegá una captura (Ctrl+V) o seleccioná un archivo. Esta imagen aparecerá sola o con el texto en el formulario público.
+                    </p>
+                  </div>
+                )}
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setIsEditing(false)}>Cancelar</Button>
-                <Button onClick={handleSaveEdit}>Guardar cambios</Button>
+                <Button
+                  onClick={handleSaveEdit}
+                  disabled={sectionMode === "new" && !newSectionName.trim()}
+                >
+                  Guardar cambios
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
