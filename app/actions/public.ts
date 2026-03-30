@@ -1,6 +1,6 @@
 "use server"
 
-import { supabase } from "@/lib/supabase"
+import { supabaseAdmin } from "@/lib/supabase"
 
 export async function submitFormResponse(data: {
   formId: string;
@@ -26,7 +26,7 @@ export async function submitFormResponse(data: {
     // Add signature field if applicable in future
   };
 
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from("form_responses")
     .insert(newResponse);
 
