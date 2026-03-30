@@ -24,7 +24,7 @@ export default async function HomePage() {
             © 2026 Municipalidad de San Miguel de Tucumán — Todos los derechos reservados
           </p>
           <p className="text-xs text-white/90 font-medium">
-            Dirección de Ingresos Municipales — Sistemas y Tecnología
+            Dirección de Ingresos Municipales —- Sistemas y Tecnología
           </p>
         </div>
       </footer>
