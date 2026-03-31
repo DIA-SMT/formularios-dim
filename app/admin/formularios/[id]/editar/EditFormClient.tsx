@@ -137,6 +137,15 @@ export function EditFormClient({ form }: { form: Form }) {
     setFields((prev) => prev.filter((f) => f.id !== id));
   };
 
+  const removeSection = (sectionName: string) => {
+    setFields((prev) => prev.filter((f) => f.section !== sectionName));
+    setSectionDescriptions((prev) => {
+      const copy = { ...prev };
+      delete copy[sectionName];
+      return copy;
+    });
+  };
+
   const toggleRequired = (id: string) => {
     setFields((prev) =>
       prev.map((f) => (f.id === id ? { ...f, required: !f.required } : f))
@@ -499,6 +508,7 @@ export function EditFormClient({ form }: { form: Form }) {
                 onUpdateSectionDescription={(name, desc) => 
                   setSectionDescriptions(prev => ({...prev, [name]: desc}))
                 }
+                onRemoveSection={removeSection}
               />
             </CardContent>
           </Card>
