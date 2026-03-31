@@ -82,7 +82,7 @@ export async function createForm(formData: Partial<Form>) {
   const newForm = {
     id: `form-${Date.now()}`,
     name: formData.name,
-    code: formData.code,
+    code: formData.code || `FRM-${Date.now().toString().slice(-6)}`,
     description: formData.description,
     area: formData.area,
     email: formData.email,
@@ -109,7 +109,7 @@ export async function updateForm(id: string, formData: Partial<Form>) {
   const updates: any = { updated_at: new Date().toISOString() }
   
   if (formData.name !== undefined) updates.name = formData.name
-  if (formData.code !== undefined) updates.code = formData.code
+  if (formData.code !== undefined) updates.code = formData.code || `FRM-${Date.now().toString().slice(-6)}`
   if (formData.description !== undefined) updates.description = formData.description
   if (formData.area !== undefined) updates.area = formData.area
   if (formData.email !== undefined) updates.email = formData.email
