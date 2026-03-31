@@ -16,7 +16,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Sparkles, ChevronUp, ChevronDown } from "lucide-react";
+import { Sparkles, ChevronUp, ChevronDown, Trash2 } from "lucide-react";
 import { SortableFieldItem } from "./SortableFieldItem";
 import { Button } from "@/components/ui/button";
 import type { FieldType, TableColumn } from "@/lib/data";
@@ -40,6 +40,7 @@ interface SortableFieldListProps {
   onUpdateField?: (id: string, updates: Partial<BuilderField>) => void;
   sectionDescriptions?: Record<string, string>;
   onUpdateSectionDescription?: (sectionName: string, description: string) => void;
+  onRemoveSection?: (sectionName: string) => void;
 }
 
 function SectionHeader({ 
@@ -100,6 +101,7 @@ export function SortableFieldList({
   onUpdateField,
   sectionDescriptions = {},
   onUpdateSectionDescription,
+  onRemoveSection,
 }: SortableFieldListProps) {
   // Requires dragging to travel at least 5px to avoid accidental trigger on clicks
   const sensors = useSensors(
@@ -250,6 +252,21 @@ export function SortableFieldList({
                 >
                   <ChevronDown className="h-3 w-3" />
                 </Button>
+                {onRemoveSection && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/10 ml-1"
+                    onClick={() => {
+                      if (window.confirm(`¿Estás seguro de eliminar la sección "${section.name}" y todos sus campos?`)) {
+                        onRemoveSection(section.name);
+                      }
+                    }}
+                    title="Eliminar sección"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                )}
               </div>
               
               <SectionHeader 
