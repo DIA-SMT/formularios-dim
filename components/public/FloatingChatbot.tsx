@@ -12,6 +12,24 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
+/** Renders basic markdown: **bold**, line breaks */
+function MessageContent({ text }: { text: string }) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  const rendered = parts.map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={i}>{part.slice(2, -2)}</strong>;
+    }
+    // Preserve newlines
+    return part.split("\n").map((line, j, arr) => (
+      <span key={`${i}-${j}`}>
+        {line}
+        {j < arr.length - 1 && <br />}
+      </span>
+    ));
+  });
+  return <>{rendered}</>;
+}
+
 interface Message {
   role: "user" | "assistant";
   content: string;
@@ -193,13 +211,13 @@ export function FloatingChatbot() {
                   )}
                   <div
                     className={cn(
-                      "max-w-[78%] px-3 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap",
+                      "max-w-[78%] px-3 py-2.5 rounded-2xl text-sm leading-relaxed",
                       msg.role === "user"
                         ? "bg-primary text-primary-foreground rounded-tr-none"
                         : "bg-muted rounded-tl-none"
                     )}
                   >
-                    {msg.content}
+                    <MessageContent text={msg.content} />
                   </div>
                 </div>
               ))}
