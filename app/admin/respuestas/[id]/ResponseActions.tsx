@@ -94,7 +94,12 @@ export function ResponseActions({
           </p>
 
           {/* Download */}
-          <Button variant="outline" className="w-full gap-2" size="sm">
+          <Button 
+            variant="outline" 
+            className="w-full gap-2" 
+            size="sm"
+            onClick={() => window.print()}
+          >
             <Download className="w-4 h-4" />
             Descargar comprobante
           </Button>
