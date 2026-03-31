@@ -38,6 +38,58 @@ interface SortableFieldListProps {
   removeField: (id: string) => void;
   toggleRequired: (id: string) => void;
   onUpdateField?: (id: string, updates: Partial<BuilderField>) => void;
+  sectionDescriptions?: Record<string, string>;
+  onUpdateSectionDescription?: (sectionName: string, description: string) => void;
+}
+
+function SectionHeader({ 
+  name, 
+  description, 
+  onUpdateDescription 
+}: { 
+  name: string; 
+  description: string; 
+  onUpdateDescription?: (name: string, desc: string) => void; 
+}) {
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [value, setValue] = React.useState(description);
+
+  // Sync value if props change externally
+  React.useEffect(() => {
+    setValue(description);
+  }, [description]);
+
+  const handleBlur = () => {
+    setIsEditing(false);
+    if (onUpdateDescription && value !== description) {
+      onUpdateDescription(name, value);
+    }
+  };
+
+  return (
+    <div className="mb-3 space-y-1.5 px-1">
+      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        {name}
+      </p>
+      {onUpdateDescription ? (
+        <textarea
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onFocus={() => setIsEditing(true)}
+          onBlur={handleBlur}
+          placeholder="Escribí una introducción o explicación opcional para esta sección..."
+          className={`w-full text-sm bg-transparent resize-none overflow-hidden transition-colors ${
+            isEditing 
+              ? "border border-border rounded-md p-2 min-h-[60px] bg-background focus:outline-none focus:ring-1 focus:ring-primary" 
+              : "border border-transparent p-0 italic text-muted-foreground hover:bg-muted/30 hover:cursor-text rounded-sm"
+          } ${!isEditing && !value ? "h-[24px]" : ""}`}
+          rows={isEditing || value ? Math.max(2, value.split('\\n').length) : 1}
+        />
+      ) : (
+        value && <p className="text-sm italic text-muted-foreground whitespace-pre-wrap">{value}</p>
+      )}
+    </div>
+  );
 }
 
 export function SortableFieldList({
@@ -46,6 +98,8 @@ export function SortableFieldList({
   removeField,
   toggleRequired,
   onUpdateField,
+  sectionDescriptions = {},
+  onUpdateSectionDescription,
 }: SortableFieldListProps) {
   // Requires dragging to travel at least 5px to avoid accidental trigger on clicks
   const sensors = useSensors(
@@ -174,34 +228,35 @@ export function SortableFieldList({
       >
         <div className="space-y-6">
           {fieldsBySection.map((section, idx) => (
-            <div key={`${section.name}-${idx}`} className="group/section">
-              <div className="flex items-center justify-between mb-2 px-1">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {section.name}
-                </p>
-                <div className="flex items-center gap-1 opacity-0 group-hover/section:opacity-100 transition-opacity">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => moveSection(section.name, "up")}
-                    disabled={idx === 0}
-                    title="Subir sección"
-                  >
-                    <ChevronUp className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => moveSection(section.name, "down")}
-                    disabled={idx === fieldsBySection.length - 1}
-                    title="Bajar sección"
-                  >
-                    <ChevronDown className="h-3 w-3" />
-                  </Button>
-                </div>
+            <div key={`${section.name}-${idx}`} className="group/section relative">
+              <div className="absolute top-0 right-1 flex items-center gap-1 opacity-0 group-hover/section:opacity-100 transition-opacity z-10">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={() => moveSection(section.name, "up")}
+                  disabled={idx === 0}
+                  title="Subir sección"
+                >
+                  <ChevronUp className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={() => moveSection(section.name, "down")}
+                  disabled={idx === fieldsBySection.length - 1}
+                  title="Bajar sección"
+                >
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
               </div>
+              
+              <SectionHeader 
+                name={section.name}
+                description={sectionDescriptions[section.name] || ""}
+                onUpdateDescription={onUpdateSectionDescription}
+              />
               <div className="space-y-2">
                 {section.items.map((field) => (
                   <SortableFieldItem

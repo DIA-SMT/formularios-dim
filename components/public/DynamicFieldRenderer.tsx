@@ -186,12 +186,14 @@ export function DynamicFieldRenderer({
     }
   };
 
-  // info_image no necesita input — se renderiza completo directamente
-  if (field.type === "info_image") {
+  // info_image o info_text no necesitan input — se renderizan completo directamente
+  if (field.type === "info_image" || field.type === "info_text") {
     return (
-      <div className="space-y-2">
+      <div className="space-y-2 py-2">
         {field.label && (
-          <p className="text-sm font-semibold text-foreground">{field.label}</p>
+          <p className={`text-sm text-foreground whitespace-pre-wrap ${field.type === "info_text" ? "leading-relaxed" : "font-semibold"}`}>
+            {field.label}
+          </p>
         )}
         {field.description && (
           <p className="text-xs text-muted-foreground">{field.description}</p>

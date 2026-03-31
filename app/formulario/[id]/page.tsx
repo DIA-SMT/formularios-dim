@@ -118,13 +118,20 @@ export default function FormularioPage({ params }: PageProps) {
     
     setIsSubmitting(true);
     
+    // Encontrar el primer campo de tipo "email" en el formulario
+    const emailField = form.fields.find(f => f.type === "email");
+
     // Extract citizen details from formData if possible (heuristic)
     const citizenName = String(
       formData.apellido_nombre || formData.razon_social || formData.nombre || "Ciudadano"
     );
-    const email = String(
-      formData.email_contacto || formData.email || "no-reply@example.com"
-    );
+    
+    const emailValue = (emailField && formData[emailField.id]) 
+      || formData.email_contacto 
+      || formData.email 
+      || "no-reply@example.com";
+      
+    const email = String(emailValue);
 
     const result = await submitFormResponse({
       formId: form.id,
@@ -228,6 +235,11 @@ export default function FormularioPage({ params }: PageProps) {
                     <CardTitle className="text-base font-semibold text-foreground">
                       {sectionName}
                     </CardTitle>
+                    {form?.sectionDescriptions?.[sectionName] && (
+                      <p className="text-sm text-foreground/80 mt-2 whitespace-pre-wrap leading-relaxed">
+                        {form.sectionDescriptions[sectionName]}
+                      </p>
+                    )}
                   </CardHeader>
                   <CardContent className="pt-5">
                     <div className="space-y-5">

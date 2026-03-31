@@ -46,6 +46,7 @@ const FIELD_TYPE_LABELS: Record<FieldType, string> = {
   signature: "Firma manuscrita",
   table: "Tabla editable (DDJJ)",
   info_image: "Imagen informativa (solo lectura)",
+  info_text: "Texto informativo (solo lectura)",
 };
 
 interface BuilderField {
@@ -77,6 +78,7 @@ export function EditFormClient({ form }: { form: Form }) {
       options: f.options ? f.options.map((opt: any) => typeof opt === 'string' ? opt : opt.label) : undefined
     }));
   });
+  const [sectionDescriptions, setSectionDescriptions] = useState<Record<string, string>>(form.sectionDescriptions || {});
   const [newFieldType, setNewFieldType] = useState<FieldType>("text");
   const [newFieldLabel, setNewFieldLabel] = useState("");
   const [newFieldSection, setNewFieldSection] = useState("General");
@@ -90,10 +92,10 @@ export function EditFormClient({ form }: { form: Form }) {
   const existingSections = [...new Set(fields.map((f) => f.section))].filter(Boolean);
 
   const addField = () => {
-    // Si es imagen informativa, permitimos etiqueta vacía (usamos default)
-    if (!newFieldLabel.trim() && newFieldType !== "info_image") return;
+    // Si es imagen informativa o texto, permitimos etiqueta vacía (usamos default)
+    if (!newFieldLabel.trim() && newFieldType !== "info_image" && newFieldType !== "info_text") return;
     
-    const finalLabel = newFieldLabel.trim() || (newFieldType === "info_image" ? "Imagen informativa" : "");
+    const finalLabel = newFieldLabel.trim() || (newFieldType === "info_image" ? "Imagen informativa" : newFieldType === "info_text" ? "Texto informativo" : "");
     const section =
       newFieldSectionMode === "new"
         ? newFieldSectionCustom.trim() || "General"
@@ -165,6 +167,7 @@ export function EditFormClient({ form }: { form: Form }) {
               }))
             : undefined,
         })),
+        sectionDescriptions,
         status: publish ? ("published" as const) : form.status,
       };
 
@@ -380,13 +383,22 @@ export function EditFormClient({ form }: { form: Form }) {
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Etiqueta del campo</Label>
-                  <Input
-                    value={newFieldLabel}
-                    onChange={(e) => setNewFieldLabel(e.target.value)}
-                    placeholder="Nombre del campo"
-                    onKeyDown={(e) => e.key === "Enter" && addField()}
-                  />
+                  <Label className="text-xs">{newFieldType === "info_text" ? "Texto informativo" : "Etiqueta del campo"}</Label>
+                  {newFieldType === "info_text" ? (
+                    <Textarea 
+                      value={newFieldLabel} 
+                      onChange={(e) => setNewFieldLabel(e.target.value)} 
+                      placeholder="Escriba el texto informativo aquí..."
+                      className="resize-y"
+                    />
+                  ) : (
+                    <Input
+                      value={newFieldLabel}
+                      onChange={(e) => setNewFieldLabel(e.target.value)}
+                      placeholder="Nombre del campo"
+                      onKeyDown={(e) => e.key === "Enter" && addField()}
+                    />
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs">Sección</Label>
@@ -454,7 +466,8 @@ export function EditFormClient({ form }: { form: Form }) {
                 onClick={addField}
                 disabled={
                   (newFieldType === "info_image" && !newFieldImageUrl) ||
-                  (newFieldType === "table" && newFieldColumns.length === 0)
+                  (newFieldType === "table" && newFieldColumns.length === 0) ||
+                  (newFieldType === "info_text" && !newFieldLabel.trim())
                 }
               >
                 <Plus className="w-4 h-4" />
@@ -482,6 +495,10 @@ export function EditFormClient({ form }: { form: Form }) {
                 removeField={removeField}
                 toggleRequired={toggleRequired}
                 onUpdateField={updateField}
+                sectionDescriptions={sectionDescriptions}
+                onUpdateSectionDescription={(name, desc) => 
+                  setSectionDescriptions(prev => ({...prev, [name]: desc}))
+                }
               />
             </CardContent>
           </Card>
