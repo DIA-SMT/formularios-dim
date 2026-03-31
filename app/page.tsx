@@ -21,7 +21,7 @@ export default async function HomePage() {
       >
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
           <p className="text-xs text-white/90 font-medium">
-            © 2026 Municipalidad de San Miguel de Tucumán — Todos los derechos reservados
+            © 2026 Desarrollado por la Dirección de IA, Municipalidad de San Miguel de Tucumán — Todos los derechos reservados
           </p>
           <p className="text-xs text-white/90 font-medium">
             Dirección de Ingresos Municipales —- Sistemas y Tecnología
