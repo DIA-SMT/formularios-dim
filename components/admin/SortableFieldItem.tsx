@@ -38,6 +38,7 @@ const FIELD_TYPE_LABELS: Record<FieldType, string> = {
   signature: "Firma manuscrita",
   table: "Tabla editable (DDJJ)",
   info_image: "Imagen informativa (solo lectura)",
+  info_text: "Texto informativo (solo lectura)",
 };
 
 interface BuilderField {
@@ -46,6 +47,7 @@ interface BuilderField {
   label: string;
   required: boolean;
   section: string;
+  placeholder?: string;
   options?: string[];
   imageUrl?: string;
   columns?: TableColumn[];
@@ -78,6 +80,7 @@ export function SortableFieldItem({
 
   const [isEditing, setIsEditing] = useState(false);
   const [editLabel, setEditLabel] = useState(field.label);
+  const [editPlaceholder, setEditPlaceholder] = useState(field.placeholder || "");
   const [editSection, setEditSection] = useState(field.section);
   // "__new__" es el valor especial para crear sección nueva
   const [sectionMode, setSectionMode] = useState<"existing" | "new">("existing");
@@ -89,6 +92,7 @@ export function SortableFieldItem({
     setIsEditing(open);
     if (open) {
       setEditLabel(field.label);
+      setEditPlaceholder(field.placeholder || "");
       setEditSection(field.section);
       setSectionMode("existing");
       setNewSectionName("");
@@ -103,6 +107,7 @@ export function SortableFieldItem({
     if (onUpdate) {
       onUpdate(field.id, {
         label: editLabel,
+        placeholder: editPlaceholder.trim() || undefined,
         section: finalSection,
         imageUrl: editImageUrl,
         columns: field.type === "table" ? editColumns : undefined,
@@ -164,7 +169,7 @@ export function SortableFieldItem({
       </div>
 
       <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-        {field.type !== "info_image" && (
+        {field.type !== "info_image" && field.type !== "info_text" && (
           <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer select-none mr-2">
             <input
               type="checkbox"
@@ -196,6 +201,12 @@ export function SortableFieldItem({
                   <Label>Etiqueta del campo</Label>
                   <Input value={editLabel} onChange={e => setEditLabel(e.target.value)} />
                 </div>
+                {["text", "textarea", "number", "email"].includes(field.type) && (
+                  <div className="space-y-1.5">
+                    <Label>Texto de ayuda (Placeholder)</Label>
+                    <Input value={editPlaceholder} onChange={e => setEditPlaceholder(e.target.value)} placeholder="Ej: Ingrese su respuesta aquí..." />
+                  </div>
+                )}
                 <div className="space-y-1.5">
                   <Label>Sección</Label>
                   <Select

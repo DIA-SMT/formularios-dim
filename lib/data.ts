@@ -10,7 +10,8 @@ export type FieldType =
   | "file"
   | "signature"
   | "table"
-  | "info_image"; // Imagen/instructivo de solo lectura embebido en el formulario
+  | "info_image"
+  | "info_text"; // Texto introductorio / descriptivo
 
 export interface SelectOption {
   label: string;
@@ -51,6 +52,7 @@ export interface Form {
   createdAt: string;
   updatedAt: string;
   fields: FormField[];
+  sectionDescriptions?: Record<string, string>;
 }
 
 export interface TableRow {

@@ -16,13 +16,26 @@ export async function getForms() {
   }
   
   // Transform snake_case to camelCase mapping for the UI
-  return (data || []).map((form: any) => ({
-    ...form,
-    requiresSignature: form.requires_signature,
-    allowAttachments: form.allow_attachments,
-    createdAt: form.created_at,
-    updatedAt: form.updated_at,
-  })) as Form[]
+  return (data || []).map((form: any) => {
+    let sectionDescriptions = {};
+    const visibleFields = (form.fields || []).filter((f: any) => {
+      if (f.id === "__SECTION_DESCRIPTIONS__") {
+        try { sectionDescriptions = JSON.parse(f.label) } catch (e) {}
+        return false;
+      }
+      return true;
+    });
+
+    return {
+      ...form,
+      fields: visibleFields,
+      sectionDescriptions,
+      requiresSignature: form.requires_signature,
+      allowAttachments: form.allow_attachments,
+      createdAt: form.created_at,
+      updatedAt: form.updated_at,
+    };
+  }) as Form[]
 }
 
 export async function getForm(id: string) {
@@ -34,8 +47,19 @@ export async function getForm(id: string) {
 
   if (error || !data) return null
 
+  let sectionDescriptions = {};
+  const visibleFields = (data.fields || []).filter((f: any) => {
+    if (f.id === "__SECTION_DESCRIPTIONS__") {
+      try { sectionDescriptions = JSON.parse(f.label) } catch (e) {}
+      return false;
+    }
+    return true;
+  });
+
   return {
     ...data,
+    fields: visibleFields,
+    sectionDescriptions,
     requiresSignature: data.requires_signature,
     allowAttachments: data.allow_attachments,
     createdAt: data.created_at,
@@ -44,6 +68,17 @@ export async function getForm(id: string) {
 }
 
 export async function createForm(formData: Partial<Form>) {
+  const fieldsWithDescriptions = [...(formData.fields || [])];
+  if (formData.sectionDescriptions && Object.keys(formData.sectionDescriptions).length > 0) {
+    fieldsWithDescriptions.push({
+      id: "__SECTION_DESCRIPTIONS__",
+      type: "text",
+      label: JSON.stringify(formData.sectionDescriptions),
+      required: false,
+      section: "__HIDDEN__"
+    } as any);
+  }
+
   const newForm = {
     id: `form-${Date.now()}`,
     name: formData.name,
@@ -54,7 +89,7 @@ export async function createForm(formData: Partial<Form>) {
     requires_signature: formData.requiresSignature || false,
     allow_attachments: formData.allowAttachments || false,
     status: formData.status || "draft",
-    fields: formData.fields || [],
+    fields: fieldsWithDescriptions,
   }
 
   const { error } = await supabaseAdmin
@@ -81,7 +116,19 @@ export async function updateForm(id: string, formData: Partial<Form>) {
   if (formData.requiresSignature !== undefined) updates.requires_signature = formData.requiresSignature
   if (formData.allowAttachments !== undefined) updates.allow_attachments = formData.allowAttachments
   if (formData.status !== undefined) updates.status = formData.status
-  if (formData.fields !== undefined) updates.fields = formData.fields
+  if (formData.fields !== undefined || formData.sectionDescriptions !== undefined) {
+    const fieldsWithDescriptions = [...(formData.fields || [])];
+    if (formData.sectionDescriptions && Object.keys(formData.sectionDescriptions).length > 0) {
+      fieldsWithDescriptions.push({
+        id: "__SECTION_DESCRIPTIONS__",
+        type: "text",
+        label: JSON.stringify(formData.sectionDescriptions),
+        required: false,
+        section: "__HIDDEN__"
+      } as any);
+    }
+    updates.fields = fieldsWithDescriptions;
+  }
 
   const { error } = await supabaseAdmin
     .from("forms")
