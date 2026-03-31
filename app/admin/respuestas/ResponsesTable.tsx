@@ -119,7 +119,7 @@ export function ResponsesTable({
                     <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden md:table-cell">
                       Formulario
                     </th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden lg:table-cell">
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden sm:table-cell">
                       Código
                     </th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden lg:table-cell">
@@ -151,7 +151,7 @@ export function ResponsesTable({
                           {resp.formName}
                         </p>
                       </td>
-                      <td className="px-4 py-4 hidden lg:table-cell">
+                      <td className="px-4 py-4 hidden sm:table-cell">
                         <span className="font-mono text-xs text-muted-foreground">
                           {resp.tramiteCode}
                         </span>

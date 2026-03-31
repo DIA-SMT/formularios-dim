@@ -301,6 +301,12 @@ export default async function RespuestaDetailPage({
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
+                <p className="text-xs text-muted-foreground">Código de trámite</p>
+                <p className="text-sm font-bold text-foreground mt-0.5 font-mono">
+                  {response.tramiteCode}
+                </p>
+              </div>
+              <div>
                 <p className="text-xs text-muted-foreground">Formulario</p>
                 <p className="text-sm font-medium text-foreground mt-0.5 leading-snug">
                   {response.formName}

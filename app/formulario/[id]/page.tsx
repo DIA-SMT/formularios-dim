@@ -40,7 +40,7 @@ export default function FormularioPage({ params }: PageProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tramiteCode] = useState(
     () =>
-      "TRM-2024-" +
+      `TRM-${new Date().getFullYear()}-` +
       String(Math.floor(10000 + Math.random() * 90000)).padStart(5, "0")
   );
 
