@@ -31,7 +31,7 @@ export async function getResponses() {
 export async function getResponse(id: string) {
   const { data, error } = await supabaseAdmin
     .from("form_responses")
-    .select("*")
+    .select("*, forms(*)")
     .eq("id", id)
     .single()
 
@@ -46,6 +46,13 @@ export async function getResponse(id: string) {
     citizenName: data.citizen_name,
     hasAttachments: data.has_attachments,
     destinationEmail: data.destination_email,
+    form: data.forms ? {
+      ...data.forms,
+      requiresSignature: data.forms.requires_signature,
+      allowAttachments: data.forms.allow_attachments,
+      createdAt: data.forms.created_at,
+      updatedAt: data.forms.updated_at,
+    } : undefined
   } as FormResponse
 }
 

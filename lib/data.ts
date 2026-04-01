@@ -72,6 +72,7 @@ export interface FormResponse {
   signature?: string;
   hasAttachments: boolean;
   destinationEmail: string;
+  form?: Form; // Opcionalmente incluimos el formulario original
 }
 
 export const MOCK_FORMS: Form[] = [

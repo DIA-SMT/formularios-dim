@@ -142,7 +142,7 @@ export function ResponsesTable({
                     >
                       <td className="px-5 py-4">
                         <p className="font-medium text-foreground">
-                          {resp.citizenName}
+                          {resp.citizenName?.startsWith("data:image") ? "Ciudadano" : resp.citizenName}
                         </p>
                         <p className="text-xs text-muted-foreground">{resp.email}</p>
                       </td>

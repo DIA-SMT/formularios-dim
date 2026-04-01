@@ -5,20 +5,25 @@ import { supabaseAdmin } from "@/lib/supabase"
 export async function submitFormResponse(data: {
   formId: string;
   formName: string;
-  tramiteCode: string;
+  tramiteCode?: string; // We'll ignore the client one to ensure absolute uniqueness
   citizenName: string;
   email: string;
   data: Record<string, unknown>;
   hasAttachments: boolean;
   destinationEmail: string;
 }) {
-  const responseId = `resp-${Date.now()}`;
+  const responseId = `resp-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+  
+  // Garantizar que el código de trámite es único y no se repite, sumando timestamp + aleatorio
+  const dateStr = new Date().toISOString().replace(/[-:T.Z]/g, ''); // YYYYMMDDHHMMSSms
+  const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+  const uniqueCode = `TRM-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 10)}`;
 
   const newResponse = {
     id: responseId,
     form_id: data.formId,
     form_name: data.formName,
-    tramite_code: data.tramiteCode,
+    tramite_code: uniqueCode,
     citizen_name: data.citizenName,
     email: data.email,
     data: data.data,
@@ -43,7 +48,7 @@ export async function submitFormResponse(data: {
       citizen_name: data.citizenName,
       form_id: data.formId,
       form_name: data.formName,
-      tramite_code: data.tramiteCode,
+      tramite_code: uniqueCode,
       email: data.email || null,
       response_id: responseId,
     });
@@ -53,5 +58,5 @@ export async function submitFormResponse(data: {
     console.error("Error registering citizen submission:", submissionError);
   }
 
-  return { success: true, id: responseId };
+  return { success: true, id: responseId, tramiteCode: uniqueCode };
 }

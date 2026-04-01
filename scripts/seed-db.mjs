@@ -71,9 +71,22 @@ CREATE TABLE IF NOT EXISTS public.form_responses (
   destination_email TEXT
 );
 
+-- Tabla de historial por ciudadano (trazabilidad)
+CREATE TABLE IF NOT EXISTS public.citizen_submissions (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  citizen_name      TEXT NOT NULL,
+  form_id           TEXT NOT NULL REFERENCES public.forms(id) ON DELETE CASCADE,
+  form_name         TEXT NOT NULL,
+  tramite_code      TEXT NOT NULL,
+  email             TEXT,
+  response_id       TEXT NOT NULL REFERENCES public.form_responses(id) ON DELETE CASCADE,
+  created_at        TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Habilitar RLS
 ALTER TABLE public.forms ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.form_responses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.citizen_submissions ENABLE ROW LEVEL SECURITY;
 
 -- Políticas: todos pueden leer formularios publicados
 DROP POLICY IF EXISTS "Anyone can read published forms" ON public.forms;
@@ -91,8 +104,12 @@ DROP POLICY IF EXISTS "Service role full access responses" ON public.form_respon
 CREATE POLICY "Service role full access responses"
   ON public.form_responses FOR ALL
   USING (true);
-`;
 
+DROP POLICY IF EXISTS "Service role full access citizen submissions" ON public.citizen_submissions;
+CREATE POLICY "Service role full access citizen submissions"
+  ON public.citizen_submissions FOR ALL
+  USING (true);
+`;
 // ─── MOCK DATA ────────────────────────────────────────────────────────────────
 const MOCK_FORMS = [
   {

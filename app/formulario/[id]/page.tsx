@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { DynamicFieldRenderer } from "@/components/public/DynamicFieldRenderer";
 import { PublicHeader } from "@/components/public/PublicHeader";
 import { SubmissionSuccess } from "@/components/public/SubmissionSuccess";
-import type { FormField, Form } from "@/lib/data";
+import type { FormField, Form, FieldType } from "@/lib/data";
 import { getForm } from "@/app/actions/forms";
 import { submitFormResponse } from "@/app/actions/public";
 
@@ -38,11 +38,7 @@ export default function FormularioPage({ params }: PageProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [tramiteCode] = useState(
-    () =>
-      `TRM-${new Date().getFullYear()}-` +
-      String(Math.floor(10000 + Math.random() * 90000)).padStart(5, "0")
-  );
+  const [tramiteCode, setTramiteCode] = useState(""); // El código real se asignará en el servidor al enviar
 
   useEffect(() => {
     getForm(id).then((data) => {
@@ -122,27 +118,43 @@ export default function FormularioPage({ params }: PageProps) {
     const emailField = form.fields.find(f => f.type === "email");
 
     // --- Extracción inteligente del nombre del ciudadano ---
+    const isDataUrl = (v: unknown) => typeof v === "string" && v.startsWith("data:");
+    const isLikelyName = (v: unknown) => {
+      if (typeof v !== "string") return false;
+      const s = v.trim();
+      return s.length > 0 && s.length < 255 && !isDataUrl(s);
+    };
+    
     // 1. Intentar por IDs comunes (formularios predefinidos)
-    // 2. Si no, buscar entre todos los campos cuyo label contenga palabras clave de nombre/apellido
     const NAME_KEYWORDS = [
-      "apellido", "nombre", "razón social", "razon social", "solicitante", "titular",
+      "apellido", "nombre", "razón social", "razon social", "solicitante", "titular", "contribuyente", "interesado", "firmante",
     ];
     let citizenName = "Ciudadano";
+    
     // Primero buscar por IDs conocidos
-    const knownIds = ["apellido_nombre", "razon_social", "nombre", "apellido_y_nombre", "nombre_apellido"];
+    const knownIds = [
+      "apellido_nombre", "razon_social", "nombre", "apellido_y_nombre", 
+      "nombre_apellido", "nombre_completo", "nombre_firmante", "titular_nombre"
+    ];
     for (const id of knownIds) {
-      if (formData[id] && String(formData[id]).trim()) {
-        citizenName = String(formData[id]).trim();
+      const val = formData[id];
+      if (isLikelyName(val)) {
+        citizenName = String(val).trim();
         break;
       }
     }
+    
     // Si no encontró por ID, buscar en los campos del formulario por label
     if (citizenName === "Ciudadano") {
       for (const field of form.fields) {
+        // Ignorar campos que definitivamente no son nombres simples
+        const invalidNameTypes: FieldType[] = ["signature", "file", "info_image", "table", "checkbox"];
+        if (invalidNameTypes.includes(field.type)) continue;
+        
         const labelLower = field.label.toLowerCase();
         if (NAME_KEYWORDS.some(kw => labelLower.includes(kw))) {
           const val = formData[field.id];
-          if (val && String(val).trim()) {
+          if (isLikelyName(val)) {
             citizenName = String(val).trim();
             break;
           }
@@ -160,7 +172,6 @@ export default function FormularioPage({ params }: PageProps) {
     const result = await submitFormResponse({
       formId: form.id,
       formName: form.name,
-      tramiteCode,
       citizenName,
       email,
       data: formData,
@@ -173,6 +184,9 @@ export default function FormularioPage({ params }: PageProps) {
     if (result.error) {
       alert(result.error);
     } else {
+      if (result.tramiteCode) {
+        setTramiteCode(result.tramiteCode);
+      }
       setSubmitted(true);
     }
   };
