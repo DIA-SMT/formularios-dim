@@ -12,8 +12,10 @@ export async function submitFormResponse(data: {
   hasAttachments: boolean;
   destinationEmail: string;
 }) {
+  const responseId = `resp-${Date.now()}`;
+
   const newResponse = {
-    id: `resp-${Date.now()}`,
+    id: responseId,
     form_id: data.formId,
     form_name: data.formName,
     tramite_code: data.tramiteCode,
@@ -23,7 +25,6 @@ export async function submitFormResponse(data: {
     status: "pendiente",
     has_attachments: data.hasAttachments,
     destination_email: data.destinationEmail,
-    // Add signature field if applicable in future
   };
 
   const { error } = await supabaseAdmin
@@ -35,5 +36,22 @@ export async function submitFormResponse(data: {
     return { error: "No se pudo enviar el formulario. Intente nuevamente." };
   }
 
-  return { success: true, id: newResponse.id };
+  // Registrar en citizen_submissions para trazabilidad
+  const { error: submissionError } = await supabaseAdmin
+    .from("citizen_submissions")
+    .insert({
+      citizen_name: data.citizenName,
+      form_id: data.formId,
+      form_name: data.formName,
+      tramite_code: data.tramiteCode,
+      email: data.email || null,
+      response_id: responseId,
+    });
+
+  if (submissionError) {
+    // No bloquear el envío si falla el registro secundario, solo loguear
+    console.error("Error registering citizen submission:", submissionError);
+  }
+
+  return { success: true, id: responseId };
 }

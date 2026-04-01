@@ -58,21 +58,25 @@ export default async function RespuestaDetailPage({
 
   const rawData = response.data as Record<string, unknown>;
 
-  // Separate signature fields embedded in data (data:image/...) from normal fields
-  const isDataUrl = (v: unknown): v is string =>
-    typeof v === "string" && v.startsWith("data:");
+
+  const isImageDataUrl = (v: unknown): v is string =>
+    typeof v === "string" && v.startsWith("data:image");
+
+  const isPdfDataUrl = (v: unknown): v is string =>
+    typeof v === "string" && v.startsWith("data:application/pdf");
 
   const isTableRows = (v: unknown): boolean =>
     Array.isArray(v) && v.length > 0 && typeof v[0] === "object";
 
-  // Embedded signatures stored in data (e.g. key === "firma" or "firma_hab")
-  const embeddedSignatures = Object.entries(rawData).filter(([, v]) =>
-    isDataUrl(v)
+  // Signatures: data:image fields whose key suggests it's a signature
+  const SIGNATURE_KEYS = ["firma", "firma_hab", "signature", "sign"];
+  const embeddedSignatures = Object.entries(rawData).filter(
+    ([k, v]) => isImageDataUrl(v) && SIGNATURE_KEYS.some(sk => k.toLowerCase().includes(sk))
   );
 
-  // Filter out data-URL fields and keep meaningful fields for display
+  // All other fields — include non-signature data URLs (user-uploaded images/PDFs)
   const dataEntries = Object.entries(rawData).filter(
-    ([, value]) => !isDataUrl(value)
+    ([k]) => !SIGNATURE_KEYS.some(sk => k.toLowerCase().includes(sk))
   );
 
   const fieldLabels: Record<string, string> = {
@@ -100,8 +104,8 @@ export default async function RespuestaDetailPage({
     response.signature && !response.signature.startsWith("data:image/png;base64,mock")
       ? response.signature
       : embeddedSignatures.length > 0
-      ? String(embeddedSignatures[0][1])
-      : null;
+        ? String(embeddedSignatures[0][1])
+        : null;
 
   return (
     <div className="space-y-6 pb-20 md:pb-0 max-w-4xl">
@@ -204,6 +208,41 @@ export default async function RespuestaDetailPage({
                               </tbody>
                             </table>
                           </div>
+                        </dd>
+                      </div>
+                    );
+                  }
+
+                  // Image uploaded by the user
+                  if (isImageDataUrl(value)) {
+                    return (
+                      <div key={key} className="py-3 first:pt-0 last:pb-0 space-y-2">
+                        <dt className="text-xs text-muted-foreground">{label}</dt>
+                        <dd>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={value}
+                            alt={label}
+                            className="max-h-64 rounded-md border border-border object-contain"
+                          />
+                        </dd>
+                      </div>
+                    );
+                  }
+
+                  // PDF uploaded by the user
+                  if (isPdfDataUrl(value)) {
+                    return (
+                      <div key={key} className="grid grid-cols-2 gap-4 py-3 first:pt-0 last:pb-0">
+                        <dt className="text-xs text-muted-foreground">{label}</dt>
+                        <dd>
+                          <a
+                            href={value}
+                            download={`${key}.pdf`}
+                            className="inline-flex items-center gap-1.5 text-sm text-primary underline underline-offset-2 hover:opacity-80"
+                          >
+                            📄 Descargar PDF adjunto
+                          </a>
                         </dd>
                       </div>
                     );

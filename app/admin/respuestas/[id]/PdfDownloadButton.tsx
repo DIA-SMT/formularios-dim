@@ -9,9 +9,9 @@ export function PdfDownloadButton() {
   };
 
   return (
-    <Button 
-      variant="outline" 
-      size="sm" 
+    <Button
+      variant="outline"
+      size="sm"
       className="gap-2 shrink-0 print:hidden"
       onClick={handlePrint}
     >
