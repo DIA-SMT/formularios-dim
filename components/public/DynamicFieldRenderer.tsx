@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -126,21 +126,33 @@ export function DynamicFieldRenderer({
           </div>
         );
 
-      case "file":
+      case "file": {
+        const fileDataUrl = value as string | null;
+        const isImage = typeof fileDataUrl === "string" && fileDataUrl.startsWith("data:image");
+        const isPdf   = typeof fileDataUrl === "string" && fileDataUrl.startsWith("data:application/pdf");
+        const hasFile = typeof fileDataUrl === "string" && fileDataUrl.startsWith("data:");
+
         return (
-          <div className="border border-dashed border-border rounded-lg p-4 text-center bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer">
-            <input
-              id={field.id}
-              type="file"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                onChange(file ? file.name : null);
-              }}
-            />
-            <label htmlFor={field.id} className="cursor-pointer">
-              {value ? (
-                <p className="text-sm text-foreground font-medium">{value as string}</p>
+          <div className="space-y-2">
+            <div
+              className="border border-dashed border-border rounded-lg p-4 text-center bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
+              onClick={() => document.getElementById(field.id)?.click()}
+            >
+              <input
+                id={field.id}
+                type="file"
+                accept="image/*,.pdf"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) { onChange(null); return; }
+                  const reader = new FileReader();
+                  reader.onload = () => onChange(reader.result as string);
+                  reader.readAsDataURL(file);
+                }}
+              />
+              {hasFile ? (
+                <p className="text-sm text-foreground font-medium">✓ Archivo cargado — haz clic para cambiar</p>
               ) : (
                 <>
                   <p className="text-sm text-muted-foreground">
@@ -151,9 +163,22 @@ export function DynamicFieldRenderer({
                   </p>
                 </>
               )}
-            </label>
+            </div>
+            {/* Preview inline */}
+            {isImage && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={fileDataUrl}
+                alt="Vista previa"
+                className="max-h-48 rounded-md border border-border object-contain mx-auto block"
+              />
+            )}
+            {isPdf && (
+              <p className="text-xs text-muted-foreground text-center">📄 PDF seleccionado</p>
+            )}
           </div>
         );
+      }
 
       case "signature":
         return (

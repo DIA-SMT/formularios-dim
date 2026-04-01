@@ -117,20 +117,44 @@ export default function FormularioPage({ params }: PageProps) {
     }
     
     setIsSubmitting(true);
-    
+
     // Encontrar el primer campo de tipo "email" en el formulario
     const emailField = form.fields.find(f => f.type === "email");
 
-    // Extract citizen details from formData if possible (heuristic)
-    const citizenName = String(
-      formData.apellido_nombre || formData.razon_social || formData.nombre || "Ciudadano"
-    );
-    
-    const emailValue = (emailField && formData[emailField.id]) 
-      || formData.email_contacto 
-      || formData.email 
+    // --- Extracción inteligente del nombre del ciudadano ---
+    // 1. Intentar por IDs comunes (formularios predefinidos)
+    // 2. Si no, buscar entre todos los campos cuyo label contenga palabras clave de nombre/apellido
+    const NAME_KEYWORDS = [
+      "apellido", "nombre", "razón social", "razon social", "solicitante", "titular",
+    ];
+    let citizenName = "Ciudadano";
+    // Primero buscar por IDs conocidos
+    const knownIds = ["apellido_nombre", "razon_social", "nombre", "apellido_y_nombre", "nombre_apellido"];
+    for (const id of knownIds) {
+      if (formData[id] && String(formData[id]).trim()) {
+        citizenName = String(formData[id]).trim();
+        break;
+      }
+    }
+    // Si no encontró por ID, buscar en los campos del formulario por label
+    if (citizenName === "Ciudadano") {
+      for (const field of form.fields) {
+        const labelLower = field.label.toLowerCase();
+        if (NAME_KEYWORDS.some(kw => labelLower.includes(kw))) {
+          const val = formData[field.id];
+          if (val && String(val).trim()) {
+            citizenName = String(val).trim();
+            break;
+          }
+        }
+      }
+    }
+
+    const emailValue = (emailField && formData[emailField.id])
+      || formData.email_contacto
+      || formData.email
       || "no-reply@example.com";
-      
+
     const email = String(emailValue);
 
     const result = await submitFormResponse({
