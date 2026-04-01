@@ -99,6 +99,31 @@ export default async function RespuestaDetailPage({
     fecha_solicitud: "Fecha de Solicitud",
   };
 
+  // Map field IDs to labels using the form definition if available
+  const fieldLabelMap: Record<string, string> = { ...fieldLabels };
+  const fieldTypeMap: Record<string, string> = {};
+  const tableColumnMap: Record<string, Record<string, string>> = {};
+  const fieldSectionMap: Record<string, string> = {};
+  const sections: string[] = ["General"];
+  
+  if (response.form?.fields) {
+    response.form.fields.forEach(field => {
+      fieldLabelMap[field.id] = field.label;
+      fieldTypeMap[field.id] = field.type;
+      if (field.section && !sections.includes(field.section)) {
+        sections.push(field.section);
+      }
+      fieldSectionMap[field.id] = field.section || "General";
+      
+      if (field.type === "table" && field.columns) {
+        tableColumnMap[field.id] = {};
+        field.columns.forEach(col => {
+          tableColumnMap[field.id][col.key] = col.label;
+        });
+      }
+    });
+  }
+
   // Determine the best signature image: prefer response.signature, then embedded data ones
   const signatureImage =
     response.signature && !response.signature.startsWith("data:image/png;base64,mock")
@@ -106,6 +131,16 @@ export default async function RespuestaDetailPage({
       : embeddedSignatures.length > 0
         ? String(embeddedSignatures[0][1])
         : null;
+
+  // Final data grouping by section
+  const groupedData: Record<string, [string, any][]> = {};
+  sections.forEach(s => groupedData[s] = []);
+  
+  dataEntries.forEach(([key, value]) => {
+    const section = fieldSectionMap[key] || "General";
+    if (!groupedData[section]) groupedData[section] = [];
+    groupedData[section].push([key, value]);
+  });
 
   return (
     <div className="space-y-6 pb-20 md:pb-0 max-w-4xl">
@@ -155,7 +190,7 @@ export default async function RespuestaDetailPage({
                 <div>
                   <p className="text-xs text-muted-foreground">Nombre / Razón social</p>
                   <p className="text-sm font-medium text-foreground mt-0.5">
-                    {response.citizenName}
+                    {response.citizenName?.startsWith("data:image") ? "Ciudadano" : response.citizenName}
                   </p>
                 </div>
                 <div>
@@ -166,104 +201,113 @@ export default async function RespuestaDetailPage({
             </CardContent>
           </Card>
 
-          {/* Form data */}
-          <Card className="border-border">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Datos del formulario</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <dl className="divide-y divide-border">
-                {dataEntries.map(([key, value]) => {
-                  const label = fieldLabels[key] ?? key;
+          {/* Form data grouped by section */}
+          {sections.map(sectionName => {
+            const entries = groupedData[sectionName];
+            if (!entries || entries.length === 0) return null;
+            
+            return (
+              <Card key={sectionName} className="border-border">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">{sectionName}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <dl className="divide-y divide-border">
+                    {entries.map(([key, value]) => {
+                      const label = fieldLabelMap[key] ?? key;
 
-                  // Table rows → render as a scrollable mini-table
-                  if (isTableRows(value)) {
-                    const rows = value as Record<string, unknown>[];
-                    const cols = Object.keys(rows[0]);
-                    return (
-                      <div key={key} className="py-3 first:pt-0 last:pb-0 space-y-2">
-                        <dt className="text-xs text-muted-foreground">{label}</dt>
-                        <dd>
-                          <div className="overflow-x-auto rounded-md border border-border">
-                            <table className="w-full text-xs min-w-[400px]">
-                              <thead>
-                                <tr className="bg-muted/60">
-                                  {cols.map((col) => (
-                                    <th key={col} className="px-3 py-2 text-left font-semibold text-foreground border-b border-border whitespace-nowrap">
-                                      {col}
-                                    </th>
-                                  ))}
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {rows.map((row, i) => (
-                                  <tr key={i} className="border-b border-border last:border-b-0 hover:bg-muted/30">
-                                    {cols.map((col) => (
-                                      <td key={col} className="px-3 py-2 text-foreground">
-                                        {String(row[col] ?? "")}
-                                      </td>
+                      // Table rows → render as a scrollable mini-table
+                      if (isTableRows(value)) {
+                        const rows = value as Record<string, unknown>[];
+                        const cols = Object.keys(rows[0]);
+                        const colLabels = tableColumnMap[key] || {};
+                        
+                        return (
+                          <div key={key} className="py-3 first:pt-0 last:pb-0 space-y-2">
+                            <dt className="text-xs text-muted-foreground">{label}</dt>
+                            <dd>
+                              <div className="overflow-x-auto rounded-md border border-border">
+                                <table className="w-full text-xs min-w-[400px]">
+                                  <thead>
+                                    <tr className="bg-muted/60">
+                                      {cols.map((col) => (
+                                        <th key={col} className="px-3 py-2 text-left font-semibold text-foreground border-b border-border whitespace-nowrap">
+                                          {colLabels[col] ?? col}
+                                        </th>
+                                      ))}
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {rows.map((row, i) => (
+                                      <tr key={i} className="border-b border-border last:border-b-0 hover:bg-muted/30">
+                                        {cols.map((col) => (
+                                          <td key={col} className="px-3 py-2 text-foreground">
+                                            {String(row[col] ?? "")}
+                                          </td>
+                                        ))}
+                                      </tr>
                                     ))}
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
+                                  </tbody>
+                                </table>
+                              </div>
+                            </dd>
                           </div>
-                        </dd>
-                      </div>
-                    );
-                  }
+                        );
+                      }
 
-                  // Image uploaded by the user
-                  if (isImageDataUrl(value)) {
-                    return (
-                      <div key={key} className="py-3 first:pt-0 last:pb-0 space-y-2">
-                        <dt className="text-xs text-muted-foreground">{label}</dt>
-                        <dd>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={value}
-                            alt={label}
-                            className="max-h-64 rounded-md border border-border object-contain"
-                          />
-                        </dd>
-                      </div>
-                    );
-                  }
+                      // Image uploaded by the user
+                      if (isImageDataUrl(value)) {
+                        return (
+                          <div key={key} className="py-3 first:pt-0 last:pb-0 space-y-3">
+                            <dt className="text-xs text-muted-foreground">{label}</dt>
+                            <dd>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={value}
+                                alt={label}
+                                className="max-h-64 rounded-md border border-border object-contain"
+                              />
+                            </dd>
+                          </div>
+                        );
+                      }
 
-                  // PDF uploaded by the user
-                  if (isPdfDataUrl(value)) {
-                    return (
-                      <div key={key} className="grid grid-cols-2 gap-4 py-3 first:pt-0 last:pb-0">
-                        <dt className="text-xs text-muted-foreground">{label}</dt>
-                        <dd>
-                          <a
-                            href={value}
-                            download={`${key}.pdf`}
-                            className="inline-flex items-center gap-1.5 text-sm text-primary underline underline-offset-2 hover:opacity-80"
-                          >
-                            📄 Descargar PDF adjunto
-                          </a>
-                        </dd>
-                      </div>
-                    );
-                  }
+                      // PDF uploaded by the user
+                      if (isPdfDataUrl(value)) {
+                        return (
+                          <div key={key} className="grid grid-cols-2 gap-4 py-3 first:pt-0 last:pb-0">
+                            <dt className="text-xs text-muted-foreground">{label}</dt>
+                            <dd>
+                              <a
+                                href={value}
+                                download={`${key}.pdf`}
+                                className="inline-flex items-center gap-1.5 text-sm text-primary underline underline-offset-2 hover:opacity-80"
+                              >
+                                📄 Descargar PDF adjunto
+                              </a>
+                            </dd>
+                          </div>
+                        );
+                      }
 
-                  // Normal scalar value
-                  return (
-                    <div
-                      key={key}
-                      className="grid grid-cols-2 gap-4 py-3 first:pt-0 last:pb-0"
-                    >
-                      <dt className="text-xs text-muted-foreground">{label}</dt>
-                      <dd className="text-sm text-foreground font-medium break-words">
-                        {String(value)}
-                      </dd>
-                    </div>
-                  );
-                })}
-              </dl>
-            </CardContent>
-          </Card>
+                      // Normal scalar value
+                      return (
+                        <div
+                          key={key}
+                          className="grid grid-cols-2 gap-4 py-3 first:pt-0 last:pb-0"
+                        >
+                          <dt className="text-xs text-muted-foreground">{label}</dt>
+                          <dd className="text-sm text-foreground font-medium break-words">
+                            {String(value)}
+                          </dd>
+                        </div>
+                      );
+                    })}
+                  </dl>
+                </CardContent>
+              </Card>
+            );
+          })}
 
           {/* Signature */}
           {(signatureImage || response.signature) && (

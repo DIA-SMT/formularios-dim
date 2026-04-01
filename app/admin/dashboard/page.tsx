@@ -28,6 +28,10 @@ export default async function DashboardPage() {
     getResponses()
   ]);
 
+  const NAME_KEYWORDS = [
+    "apellido", "nombre", "razón social", "razon social", "solicitante", "titular", "contribuyente", "interesado", "firmante",
+  ];
+
   const stats = [
     {
       label: "Formularios publicados",
@@ -138,7 +142,7 @@ export default async function DashboardPage() {
                   >
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-foreground truncate">
-                        {resp.citizenName}
+                        {resp.citizenName?.startsWith("data:image") ? "Ciudadano" : resp.citizenName}
                       </p>
                       <p className="text-xs text-muted-foreground truncate">
                         {resp.formName}
