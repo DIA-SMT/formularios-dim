@@ -80,6 +80,7 @@ export function SortableFieldItem({
 
   const [isEditing, setIsEditing] = useState(false);
   const [editLabel, setEditLabel] = useState(field.label);
+  const [editType, setEditType] = useState<FieldType>(field.type);
   const [editPlaceholder, setEditPlaceholder] = useState(field.placeholder || "");
   const [editSection, setEditSection] = useState(field.section);
   // "__new__" es el valor especial para crear sección nueva
@@ -92,6 +93,7 @@ export function SortableFieldItem({
     setIsEditing(open);
     if (open) {
       setEditLabel(field.label);
+      setEditType(field.type);
       setEditPlaceholder(field.placeholder || "");
       setEditSection(field.section);
       setSectionMode("existing");
@@ -101,16 +103,26 @@ export function SortableFieldItem({
     }
   };
 
+  const handleTypeChange = (newType: FieldType) => {
+    setEditType(newType);
+    // Resetear datos dependientes del tipo anterior
+    if (newType !== "info_image") setEditImageUrl(undefined);
+    if (newType !== "table") setEditColumns([]);
+  };
+
   const handleSaveEdit = () => {
     const finalSection =
       sectionMode === "new" ? newSectionName.trim() || editSection : editSection;
     if (onUpdate) {
       onUpdate(field.id, {
         label: editLabel,
-        placeholder: editPlaceholder.trim() || undefined,
+        type: editType,
+        placeholder: ["text", "textarea", "number", "email"].includes(editType)
+          ? editPlaceholder.trim() || undefined
+          : undefined,
         section: finalSection,
-        imageUrl: editImageUrl,
-        columns: field.type === "table" ? editColumns : undefined,
+        imageUrl: editType === "info_image" ? editImageUrl : undefined,
+        columns: editType === "table" ? editColumns : undefined,
       });
     }
     setIsEditing(false);
@@ -198,10 +210,25 @@ export function SortableFieldItem({
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-1.5">
+                  <Label>Tipo de campo</Label>
+                  <Select value={editType} onValueChange={(v) => handleTypeChange(v as FieldType)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(Object.keys(FIELD_TYPE_LABELS) as FieldType[]).map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {FIELD_TYPE_LABELS[type]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
                   <Label>Etiqueta del campo</Label>
                   <Input value={editLabel} onChange={e => setEditLabel(e.target.value)} />
                 </div>
-                {["text", "textarea", "number", "email"].includes(field.type) && (
+                {["text", "textarea", "number", "email"].includes(editType) && (
                   <div className="space-y-1.5">
                     <Label>Texto de ayuda (Placeholder)</Label>
                     <Input value={editPlaceholder} onChange={e => setEditPlaceholder(e.target.value)} placeholder="Ej: Ingrese su respuesta aquí..." />
@@ -244,7 +271,7 @@ export function SortableFieldItem({
                   )}
                 </div>
 
-                {field.type === "info_image" && (
+                {editType === "info_image" && (
                   <div className="space-y-2">
                     <Label>Imagen informativa</Label>
                     <InfoImageEditor value={editImageUrl} onChange={setEditImageUrl} />
@@ -254,7 +281,7 @@ export function SortableFieldItem({
                   </div>
                 )}
 
-                {field.type === "table" && (
+                {editType === "table" && (
                   <div className="space-y-2">
                     <Label>Estructura de la tabla</Label>
                     <p className="text-xs text-muted-foreground">
