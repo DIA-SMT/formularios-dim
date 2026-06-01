@@ -113,11 +113,11 @@ No incluyas etiquetas de \`\`\`json ni nada de texto adicional.`;
       headers: {
         "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "http://localhost:3000", // Opcional, pero recomendado por OpenRouter
-        "X-Title": "Formularios DIM", // Opcional
+        "referer": "http://localhost:3000", // Recomendado por OpenRouter
+        "X-Title": "Formularios DIM",
       },
       body: JSON.stringify({
-        model: "anthropic/claude-3.5-sonnet",
+        model: process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-sonnet",
         messages: [
           {
             role: "user",
