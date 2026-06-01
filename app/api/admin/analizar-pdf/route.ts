@@ -1,5 +1,6 @@
 import * as z from "zod";
-import sharp from "sharp";
+import { createCanvas } from "canvas";
+import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 
 const formFieldSchema = z.object({
   label: z.string().describe("Nombre o etiqueta del campo tal como aparece en el formulario"),
@@ -83,9 +84,16 @@ export async function POST(req: Request) {
 
     if (file.type === "application/pdf") {
       try {
-        const pngBuffer = await sharp(fileBuffer, { density: 150 })
-          .png()
-          .toBuffer();
+        const loadingTask = getDocument({ data: new Uint8Array(fileBuffer) });
+        const pdfDoc = await loadingTask.promise;
+        const page = await pdfDoc.getPage(1);
+        const viewport = page.getViewport({ scale: 2 });
+        const canvas = createCanvas(viewport.width, viewport.height);
+        const context = canvas.getContext("2d") as unknown as CanvasRenderingContext2D;
+
+        await page.render({ canvasContext: context, viewport } as any).promise;
+        const pngBuffer = canvas.toBuffer("image/png");
+
         base64 = pngBuffer.toString("base64");
         mediaType = "image/png";
       } catch (err) {
