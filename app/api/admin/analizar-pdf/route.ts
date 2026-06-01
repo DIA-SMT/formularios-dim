@@ -1,4 +1,5 @@
 import * as z from "zod";
+import sharp from "sharp";
 
 const formFieldSchema = z.object({
   label: z.string().describe("Nombre o etiqueta del campo tal como aparece en el formulario"),
@@ -76,8 +77,38 @@ export async function POST(req: Request) {
     }
 
     const arrayBuffer = await file.arrayBuffer();
-    const base64 = Buffer.from(arrayBuffer).toString("base64");
-    const mediaType = file.type;
+    let fileBuffer = Buffer.from(arrayBuffer);
+    let mediaType = file.type;
+    let base64: string;
+
+    if (file.type === "application/pdf") {
+      try {
+        const pngBuffer = await sharp(fileBuffer, { density: 150 })
+          .png()
+          .toBuffer();
+        base64 = pngBuffer.toString("base64");
+        mediaType = "image/png";
+      } catch (err) {
+        console.error("[analizar-pdf] Error convirtiendo PDF a PNG:", err);
+        return Response.json(
+          { error: "No se pudo convertir el PDF a imagen. Por favor pruebe con JPG/PNG o verifique el archivo." },
+          { status: 500 }
+        );
+      }
+    } else {
+      base64 = fileBuffer.toString("base64");
+    }
+
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    const model = process.env.OPENROUTER_MODEL || "anthropic/claude-4.5-sonnet";
+
+    if (!apiKey) {
+      return Response.json({ error: "OPENROUTER_API_KEY no configurada" }, { status: 500 });
+    }
+
+    if (!model) {
+      return Response.json({ error: "OPENROUTER_MODEL no configurado" }, { status: 500 });
+    }
 
     // Fetch manual a OpenRouter
     const prompt = `Eres un asistente experto en digitalización de formularios municipales argentinos para la Dirección de Ingresos Municipales (DIM) de la Municipalidad de San Miguel de Tucumán.
@@ -111,13 +142,13 @@ No incluyas etiquetas de \`\`\`json ni nada de texto adicional.`;
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
         "referer": "http://localhost:3000", // Recomendado por OpenRouter
         "X-Title": "Formularios DIM",
       },
       body: JSON.stringify({
-        model: process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-sonnet",
+        model,
         messages: [
           {
             role: "user",
@@ -140,8 +171,11 @@ No incluyas etiquetas de \`\`\`json ni nada de texto adicional.`;
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error("[analizar-pdf] API Error:", errorData);
-      throw new Error(`OpenRouter API error: ${response.status} ${response.statusText}`);
+      console.error("[analizar-pdf] API Error:", response.status, errorData);
+      return Response.json(
+        { error: "OpenRouter API error", status: response.status, detail: errorData },
+        { status: 502 }
+      );
     }
 
     const jsonResponse = await response.json();
