@@ -30,10 +30,10 @@ function groupBySections(fields: FormField[]) {
 
 export default function FormularioPage({ params }: PageProps) {
   const { id } = use(params);
-  
+
   const [form, setForm] = useState<Form | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -111,7 +111,7 @@ export default function FormularioPage({ params }: PageProps) {
       document.getElementById(firstErr)?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
-    
+
     setIsSubmitting(true);
 
     // Encontrar el primer campo de tipo "email" en el formulario
@@ -124,16 +124,16 @@ export default function FormularioPage({ params }: PageProps) {
       const s = v.trim();
       return s.length > 0 && s.length < 255 && !isDataUrl(s);
     };
-    
+
     // 1. Intentar por IDs comunes (formularios predefinidos)
     const NAME_KEYWORDS = [
       "apellido", "nombre", "razón social", "razon social", "solicitante", "titular", "contribuyente", "interesado", "firmante",
     ];
     let citizenName = "Ciudadano";
-    
+
     // Primero buscar por IDs conocidos
     const knownIds = [
-      "apellido_nombre", "razon_social", "nombre", "apellido_y_nombre", 
+      "apellido_nombre", "razon_social", "nombre", "apellido_y_nombre",
       "nombre_apellido", "nombre_completo", "nombre_firmante", "titular_nombre"
     ];
     for (const id of knownIds) {
@@ -143,14 +143,14 @@ export default function FormularioPage({ params }: PageProps) {
         break;
       }
     }
-    
+
     // Si no encontró por ID, buscar en los campos del formulario por label
     if (citizenName === "Ciudadano") {
       for (const field of form.fields) {
         // Ignorar campos que definitivamente no son nombres simples
         const invalidNameTypes: FieldType[] = ["signature", "file", "info_image", "table", "checkbox"];
         if (invalidNameTypes.includes(field.type)) continue;
-        
+
         const labelLower = field.label.toLowerCase();
         if (NAME_KEYWORDS.some(kw => labelLower.includes(kw))) {
           const val = formData[field.id];
@@ -196,147 +196,147 @@ export default function FormularioPage({ params }: PageProps) {
   return (
     <div className="relative min-h-screen flex flex-col">
       {/* Background Image */}
-      <div 
+      <div
         className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat pointer-events-none"
         style={{ backgroundImage: "url('/puente.jpg')" }}
       />
       <div className="fixed inset-0 z-0 bg-primary/20 mix-blend-multiply pointer-events-none" />
       <div className="fixed inset-0 z-0 bg-gradient-to-b from-background/30 via-background/80 to-background pointer-events-none" />
-      
+
       <div className="relative z-10 flex flex-col flex-1">
         <PublicHeader />
 
-      {/* Breadcrumb */}
-      <div className="bg-white border-b border-border px-4 py-3 print:hidden">
-        <div className="max-w-4xl mx-auto">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Volver al listado
-          </Link>
+        {/* Breadcrumb */}
+        <div className="bg-white border-b border-border px-4 py-3 print:hidden">
+          <div className="max-w-4xl mx-auto">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Volver al listado
+            </Link>
+          </div>
         </div>
-      </div>
 
-      <main className="flex-1 px-4 py-8">
-        <div className="max-w-4xl mx-auto space-y-6">
-          {/* Form header card */}
-          <Card className="border-border">
-            <CardContent className="pt-6">
-              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="secondary" className="font-mono text-xs">
-                      {form.code}
-                    </Badge>
-                    <Badge
-                      className="text-xs bg-green-100 text-green-800 hover:bg-green-100"
-                    >
-                      Disponible
-                    </Badge>
-                  </div>
-                  <h1 className="text-xl font-bold text-foreground text-balance">
-                    {form.name}
-                  </h1>
-                  <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
-                    {form.description}
-                  </p>
-                  <div className="flex flex-wrap gap-x-6 gap-y-1 pt-1 text-xs text-muted-foreground">
-                    <span>Área: <strong className="text-foreground">{form.area}</strong></span>
-                    <span>Destino: <strong className="text-foreground">{form.email}</strong></span>
-                    {form.requiresSignature && (
-                      <span className="text-amber-700">Requiere firma</span>
-                    )}
+        <main className="flex-1 px-4 py-8">
+          <div className="max-w-4xl mx-auto space-y-6">
+            {/* Form header card */}
+            <Card className="border-border">
+              <CardContent className="pt-6">
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="secondary" className="font-mono text-xs">
+                        {form.code}
+                      </Badge>
+                      <Badge
+                        className="text-xs bg-green-100 text-green-800 hover:bg-green-100"
+                      >
+                        Disponible
+                      </Badge>
+                    </div>
+                    <h1 className="text-xl font-bold text-foreground text-balance">
+                      {form.name}
+                    </h1>
+                    <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
+                      {form.description}
+                    </p>
+                    <div className="flex flex-wrap gap-x-6 gap-y-1 pt-1 text-xs text-muted-foreground">
+                      <span>Área: <strong className="text-foreground">{form.area}</strong></span>
+                      <span>Destino: <strong className="text-foreground">{form.email}</strong></span>
+                      {form.requiresSignature && (
+                        <span className="text-amber-700">Requiere firma</span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          {/* Info notice */}
-          <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
-            <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-            <p className="text-sm text-blue-800">
-              Complete todos los campos marcados con{" "}
-              <span className="text-destructive font-bold">*</span>. Al finalizar, presione
-              &quot;Enviar formulario&quot;. Podrá descargar una copia del comprobante.
-            </p>
-          </div>
-
-          {/* Form body */}
-          <form onSubmit={handleSubmit} noValidate>
-            <div className="space-y-6">
-              {Object.entries(sections).map(([sectionName, fields]) => (
-                <Card key={sectionName} className="border-border">
-                  <CardHeader className="pb-3 border-b border-border">
-                    <CardTitle className="text-base font-semibold text-foreground">
-                      {sectionName}
-                    </CardTitle>
-                    {form?.sectionDescriptions?.[sectionName] && (
-                      <p className="text-sm text-foreground/80 mt-2 whitespace-pre-wrap leading-relaxed">
-                        {form.sectionDescriptions[sectionName]}
-                      </p>
-                    )}
-                  </CardHeader>
-                  <CardContent className="pt-5">
-                    <div className="space-y-5">
-                      {fields.map((field) => (
-                        <DynamicFieldRenderer
-                          key={field.id}
-                          field={field}
-                          value={formData[field.id]}
-                          onChange={(val) => handleChange(field.id, val)}
-                          error={errors[field.id]}
-                        />
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-
-              {/* DDJJ disclaimer */}
-              <div className="bg-muted/50 border border-border rounded-lg px-4 py-3">
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  <strong>Declaración Jurada:</strong> El/la suscripto/a declara bajo
-                  juramento que todos los datos consignados en el presente formulario son
-                  correctos, completos y de mi entera responsabilidad. Acepto que la
-                  información falsa puede dar lugar a sanciones administrativas y/o
-                  penales conforme la normativa vigente.
-                </p>
-              </div>
-
-              {/* Action buttons */}
-              <div className="flex flex-col sm:flex-row gap-3 print:hidden">
-                <Button type="submit" disabled={isSubmitting} className="gap-2 sm:flex-1">
-                  {isSubmitting ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
-                  {isSubmitting ? "Enviando..." : "Enviar formulario"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="gap-2"
-                  onClick={() => window.print()}
-                  disabled={isSubmitting}
-                >
-                  <Download className="w-4 h-4" />
-                  Descargar borrador
-                </Button>
-              </div>
-
-              {Object.keys(errors).length > 0 && (
-                <p className="text-sm text-destructive text-center">
-                  Por favor, complete todos los campos obligatorios antes de enviar.
-                </p>
-              )}
+            {/* Info notice */}
+            <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
+              <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+              <p className="text-sm text-blue-800">
+                Complete todos los campos marcados con{" "}
+                <span className="text-destructive font-bold">*</span>. Al finalizar, presione
+                &quot;Enviar formulario&quot;. Podrá descargar una copia del comprobante.
+              </p>
             </div>
-          </form>
-        </div>
-      </main>
+
+            {/* Form body */}
+            <form onSubmit={handleSubmit} noValidate>
+              <div className="space-y-6">
+                {Object.entries(sections).map(([sectionName, fields]) => (
+                  <Card key={sectionName} className="border-border">
+                    <CardHeader className="pb-3 border-b border-border">
+                      <CardTitle className="text-base font-semibold text-foreground">
+                        {sectionName}
+                      </CardTitle>
+                      {form?.sectionDescriptions?.[sectionName] && (
+                        <p className="text-sm text-foreground/80 mt-2 whitespace-pre-wrap leading-relaxed">
+                          {form.sectionDescriptions[sectionName]}
+                        </p>
+                      )}
+                    </CardHeader>
+                    <CardContent className="pt-5">
+                      <div className="space-y-5">
+                        {fields.map((field) => (
+                          <DynamicFieldRenderer
+                            key={field.id}
+                            field={field}
+                            value={formData[field.id]}
+                            onChange={(val) => handleChange(field.id, val)}
+                            error={errors[field.id]}
+                          />
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+
+                {/* DDJJ disclaimer */}
+                <div className="bg-muted/50 border border-border rounded-lg px-4 py-3">
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    <strong>Declaración Jurada:</strong> El/la suscripto/a declara bajo
+                    juramento que todos los datos consignados en el presente formulario son
+                    correctos, completos y de mi entera responsabilidad. Acepto que la
+                    información falsa puede dar lugar a sanciones administrativas y/o
+                    penales conforme la normativa vigente.
+                  </p>
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 print:hidden">
+                  <Button type="submit" disabled={isSubmitting} className="gap-2 sm:flex-1">
+                    {isSubmitting ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    ) : (
+                      <Send className="w-4 h-4" />
+                    )}
+                    {isSubmitting ? "Enviando..." : "Enviar formulario"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="gap-2"
+                    onClick={() => window.print()}
+                    disabled={isSubmitting}
+                  >
+                    <Download className="w-4 h-4" />
+                    Descargar borrador
+                  </Button>
+                </div>
+
+                {Object.keys(errors).length > 0 && (
+                  <p className="text-sm text-destructive text-center">
+                    Por favor, complete todos los campos obligatorios antes de enviar.
+                  </p>
+                )}
+              </div>
+            </form>
+          </div>
+        </main>
       </div>
     </div>
   );

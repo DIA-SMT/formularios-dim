@@ -127,15 +127,10 @@ No incluyas etiquetas de \`\`\`json ni nada de texto adicional.`;
                 text: prompt,
               },
               {
-                type: mediaType === "application/pdf" ? "document" : "image_url",
-                source: mediaType === "application/pdf" ? {
-                  type: "base64",
-                  media_type: "application/pdf",
-                  data: base64
-                } : undefined,
-                image_url: mediaType !== "application/pdf" ? {
+                type: "image_url",
+                image_url: {
                   url: `data:${mediaType};base64,${base64}`
-                } : undefined
+                }
               }
             ],
           },
