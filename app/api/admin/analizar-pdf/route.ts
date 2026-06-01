@@ -76,10 +76,10 @@ export async function POST(req: Request) {
     }
 
     const arrayBuffer = await file.arrayBuffer();
-    const fileBuffer = Buffer.from(arrayBuffer);
-    let base64Image: string;
-    let imbase64 = Buffer.from(arrayBuffer).toString("base64");
-    const mediaType = file.type;/ Fetch manual a OpenRouter
+    const base64 = Buffer.from(arrayBuffer).toString("base64");
+    const mediaType = file.type;
+
+    // Fetch manual a OpenRouter
     const prompt = `Eres un asistente experto en digitalización de formularios municipales argentinos para la Dirección de Ingresos Municipales (DIM) de la Municipalidad de San Miguel de Tucumán.
 
 Analizá este documento o imagen y extraé todos los campos del formulario con precisión. Para cada campo:
