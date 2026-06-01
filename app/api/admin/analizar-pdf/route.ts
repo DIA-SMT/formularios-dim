@@ -105,7 +105,7 @@ IMPORTANTE: Debes dar la respuesta SOLAMENTE en formato JSON puro y válido, sin
       "options": ["Opcion 1", "Opcion 2"]
     }
   ]
-}imageMediaType};base64,${base64Image
+}
 No incluyas etiquetas de \`\`\`json ni nada de texto adicional.`;
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
