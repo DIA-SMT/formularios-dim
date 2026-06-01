@@ -76,10 +76,10 @@ export async function POST(req: Request) {
     }
 
     const arrayBuffer = await file.arrayBuffer();
-    const base64 = Buffer.from(arrayBuffer).toString("base64");
-    const mediaType = file.type;
-
-    // Fetch manual a OpenRouter
+    const fileBuffer = Buffer.from(arrayBuffer);
+    let base64Image: string;
+    let imbase64 = Buffer.from(arrayBuffer).toString("base64");
+    const mediaType = file.type;/ Fetch manual a OpenRouter
     const prompt = `Eres un asistente experto en digitalización de formularios municipales argentinos para la Dirección de Ingresos Municipales (DIM) de la Municipalidad de San Miguel de Tucumán.
 
 Analizá este documento o imagen y extraé todos los campos del formulario con precisión. Para cada campo:
@@ -105,7 +105,7 @@ IMPORTANTE: Debes dar la respuesta SOLAMENTE en formato JSON puro y válido, sin
       "options": ["Opcion 1", "Opcion 2"]
     }
   ]
-}
+}imageMediaType};base64,${base64Image
 No incluyas etiquetas de \`\`\`json ni nada de texto adicional.`;
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
