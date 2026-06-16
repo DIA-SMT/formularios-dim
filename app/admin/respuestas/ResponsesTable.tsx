@@ -135,12 +135,22 @@ export function ResponsesTable({
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((resp) => (
+                  {filtered.map((resp) => {
+                    const isPending = resp.status === "pendiente";
+                    return (
                     <tr
                       key={resp.id}
-                      className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
+                      className={`border-b border-border last:border-0 transition-colors ${
+                        isPending
+                          ? "bg-amber-50/70 hover:bg-amber-100/70"
+                          : "hover:bg-muted/30"
+                      }`}
                     >
-                      <td className="px-5 py-4">
+                      <td
+                        className={`px-5 py-4 ${
+                          isPending ? "border-l-[3px] border-l-amber-400" : ""
+                        }`}
+                      >
                         <p className="font-medium text-foreground">
                           {resp.citizenName?.startsWith("data:image") ? "Ciudadano" : resp.citizenName}
                         </p>
@@ -185,7 +195,8 @@ export function ResponsesTable({
                         </Link>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
