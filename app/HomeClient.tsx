@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, FileText, Shield, Clock } from "lucide-react";
+import { Search, FileText } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { FormCard } from "@/components/public/FormCard";
 import type { Form } from "@/lib/data";
@@ -12,7 +12,7 @@ export function HomeClient({ publishedForms }: { publishedForms: Form[] }) {
   return (
     <>
       <section
-        className="relative py-8 px-4 overflow-hidden"
+        className="relative pt-28 pb-14 px-4 overflow-hidden"
       >
         {/* Background Image & Gradient Overlays */}
         <div 
@@ -23,10 +23,6 @@ export function HomeClient({ publishedForms }: { publishedForms: Form[] }) {
         <div className="absolute inset-0 z-0 bg-gradient-to-t from-primary via-primary/80 to-transparent opacity-90" />
         
         <div className="relative z-10 max-w-3xl mx-auto text-center space-y-3">
-          <div className="inline-flex items-center gap-2 bg-white/15 text-white text-xs px-3 py-1.5 rounded-full border border-white/20">
-            <Shield className="w-3.5 h-3.5" />
-            Trámites municipales oficiales
-          </div>
           <h1 className="text-3xl md:text-4xl font-bold text-white text-balance leading-tight">
             Formularios Digitales
             <br />
@@ -38,22 +34,6 @@ export function HomeClient({ publishedForms }: { publishedForms: Form[] }) {
           </p>
         </div>
       </section>
-
-      {/* Info bar */}
-      <div className="bg-white border-b border-border px-4 py-3">
-        <div className="max-w-6xl mx-auto flex flex-wrap gap-6 justify-center md:justify-start">
-          {[
-            { icon: FileText, label: "Sin descargas necesarias" },
-            { icon: Shield, label: "Envío seguro y oficial" },
-            { icon: Clock, label: "Respuesta en 72 hs hábiles" },
-          ].map(({ icon: Icon, label }) => (
-            <div key={label} className="flex items-center gap-2">
-              <Icon className="w-4 h-4 text-primary" />
-              <span className="text-xs text-muted-foreground">{label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
 
       {/* Forms listing */}
       <main className="flex-1 px-4 py-6" id="formularios">

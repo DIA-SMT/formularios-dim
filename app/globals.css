@@ -55,6 +55,89 @@
   --header-foreground: var(--primary-foreground);
 }
 
+/* =====================================================
+   TEMA ADMINISTRATIVO — Colores del logo municipal
+   Azul royal #1668e0 · Celeste #38b6f1 · Amarillo #ffd400
+   ===================================================== */
+.admin-theme {
+  /* Marca */
+  --logo-blue: #1668e0;
+  --logo-sky: #38b6f1;
+  --logo-yellow: #ffd400;
+  --logo-blue-deep: #0c3c86;
+
+  /* Superficies */
+  --background: #f5f8fd;
+  --foreground: #0e2444;
+  --card: #ffffff;
+  --card-foreground: #0e2444;
+  --popover: #ffffff;
+  --popover-foreground: #0e2444;
+
+  /* Acción primaria */
+  --primary: #1668e0;
+  --primary-foreground: #ffffff;
+  --ring: #1668e0;
+
+  /* Secundarios / acentos */
+  --secondary: #eaf2fd;
+  --secondary-foreground: #123c82;
+  --muted: #eef3fa;
+  --muted-foreground: #5a6b85;
+  --accent: #e3f1fd;
+  --accent-foreground: #0c3c86;
+  --border: #dbe6f5;
+  --input: #dbe6f5;
+
+  /* Charts con la paleta del logo */
+  --chart-1: #1668e0;
+  --chart-2: #38b6f1;
+  --chart-3: #0c3c86;
+  --chart-4: #ffd400;
+  --chart-5: #6aa9f5;
+
+  /* Sidebar (azul profundo del logo) */
+  --sidebar: #0d3e88;
+  --sidebar-foreground: #eaf2ff;
+  --sidebar-primary: #38b6f1;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1750a5;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #1c57ac;
+  --sidebar-ring: #38b6f1;
+  --sidebar-gradient: linear-gradient(180deg, #134a9e 0%, #0a2f6b 100%);
+
+  /* Header / badges */
+  --header-bg: #0d3e88;
+  --header-foreground: #ffffff;
+  --badge-published: oklch(0.55 0.13 160);
+  --badge-draft: #ffd400;
+
+  font-family: var(--font-poppins), 'Geist', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Cards del admin: esquinas más suaves, sombra en capas con tinte de marca
+   y una elevación sutil al pasar el cursor. */
+.admin-theme [data-slot="card"] {
+  border-radius: 1rem;
+  border-color: #e7eefa;
+  box-shadow:
+    0 1px 2px rgba(16, 42, 80, 0.04),
+    0 6px 18px -8px rgba(16, 42, 80, 0.10);
+  transition:
+    box-shadow 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.25s ease;
+}
+
+.admin-theme [data-slot="card"]:hover {
+  border-color: #cfe0f7;
+  box-shadow:
+    0 2px 4px rgba(16, 42, 80, 0.05),
+    0 14px 32px -10px rgba(22, 104, 224, 0.18);
+  transform: translateY(-2px);
+}
+
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);

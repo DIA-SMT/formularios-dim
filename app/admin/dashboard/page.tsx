@@ -3,14 +3,17 @@ import {
   Inbox,
   CheckCircle2,
   Clock,
-  TrendingUp,
   ArrowRight,
   CalendarDays,
+  LayoutDashboard,
+  BarChart3,
 } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { ResponsesTrendChart } from "./ResponsesTrendChart";
 import { getForms } from "@/app/actions/forms";
 import { getResponses } from "@/app/actions/responses";
 
@@ -81,15 +84,40 @@ export default async function DashboardPage() {
   const weeklyReportData = Object.entries(weeklyByForm)
     .sort((a, b) => b[1] - a[1]); // all forms with activity this week
 
+  // Trend: responses per day over the last 14 days
+  const TREND_DAYS = 14;
+  const trendData = Array.from({ length: TREND_DAYS }).map((_, i) => {
+    const dayStart = new Date();
+    dayStart.setHours(0, 0, 0, 0);
+    dayStart.setDate(dayStart.getDate() - (TREND_DAYS - 1 - i));
+    const dayEnd = new Date(dayStart);
+    dayEnd.setDate(dayStart.getDate() + 1);
+
+    const count = responses.filter((r) => {
+      const t = new Date(r.submittedAt);
+      return t >= dayStart && t < dayEnd;
+    }).length;
+
+    return {
+      date: dayStart.toLocaleDateString("es-AR", {
+        day: "2-digit",
+        month: "short",
+      }),
+      count,
+    };
+  });
+
+  const trendTotal = trendData.reduce((sum, d) => sum + d.count, 0);
+  const trendDailyAvg = (trendTotal / TREND_DAYS).toFixed(1);
+  const trendPeak = trendData.reduce(
+    (max, d) => (d.count > max.count ? d : max),
+    trendData[0]
+  );
+
   return (
     <div className="space-y-8 pb-20 md:pb-0">
       {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Dirección de Ingresos Municipales — Municipalidad de San Miguel de Tucumán
-        </p>
-      </div>
+      <AdminPageHeader title="Dashboard" icon={LayoutDashboard} />
 
       {/* Stats grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -255,28 +283,43 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* Quick tip */}
-      <Card className="border-border bg-blue-50/60">
-        <CardContent className="pt-5 pb-4">
-          <div className="flex items-start gap-3">
-            <TrendingUp className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-semibold text-foreground">
-                Consejo de administración
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Puede crear nuevos formularios digitales desde la sección{" "}
-                <Link
-                  href="/admin/formularios/nuevo"
-                  className="text-primary underline underline-offset-2"
-                >
-                  Formularios &rarr; Nuevo formulario
-                </Link>
-                . Los formularios en borrador no son visibles para el ciudadano
-                hasta que sean publicados.
-              </p>
+      {/* Responses trend chart */}
+      <Card className="border-border">
+        <CardHeader className="pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-primary" />
+              <CardTitle className="text-base font-semibold">
+                Respuestas por día
+              </CardTitle>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+              <span>
+                Promedio diario:{" "}
+                <span className="font-semibold text-foreground">
+                  {trendDailyAvg}
+                </span>
+              </span>
+              <span>
+                Día pico:{" "}
+                <span className="font-semibold text-foreground">
+                  {trendPeak?.count ?? 0} ({trendPeak?.date ?? "—"})
+                </span>
+              </span>
+              <Badge variant="secondary" className="font-mono">
+                Últimos 14 días
+              </Badge>
             </div>
           </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          {trendTotal === 0 ? (
+            <p className="text-sm text-muted-foreground py-10 text-center">
+              Sin respuestas en los últimos 14 días
+            </p>
+          ) : (
+            <ResponsesTrendChart data={trendData} />
+          )}
         </CardContent>
       </Card>
     </div>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, Target, ChevronRight, MessageSquare } from "lucide-react";
+import { FileText, ChevronRight, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Form } from "@/lib/data";
 
@@ -12,12 +12,12 @@ export function FormCard({ form }: FormCardProps) {
     <div className="flex flex-col h-full border border-border rounded-2xl hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 bg-white overflow-hidden">
       <div className="p-5 flex-1 flex flex-col">
         {/* Header */}
-        <div className="flex items-center gap-3.5 mb-4">
+        <div className="flex items-start gap-3.5 mb-4">
           <div className="bg-primary rounded-xl p-3 shrink-0 text-white shadow-sm">
             <FileText className="w-5 h-5" strokeWidth={1.5} />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-foreground text-base leading-tight truncate">
+            <h3 className="font-bold text-foreground text-base leading-tight">
               {form.name}
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">{form.code}</p>
@@ -31,13 +31,8 @@ export function FormCard({ form }: FormCardProps) {
 
         {/* Action area */}
         <div className="mt-auto">
-          {/* Metadata middle */}
-          <div className="flex items-center gap-2 mb-4">
-            <Target className="w-4 h-4 text-muted-foreground/70 shrink-0" />
-            <span className="text-xs text-muted-foreground font-medium truncate">
-              {form.area}
-            </span>
-          </div>
+          {/* Spacer to keep card height after removing middle metadata */}
+          <div className="h-5 mb-4" aria-hidden="true" />
 
           <div className="h-px w-full bg-border/60 mb-4" />
 

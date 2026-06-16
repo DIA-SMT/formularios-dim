@@ -1,11 +1,16 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Geist, Geist_Mono, Poppins } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { FloatingChatbot } from '@/components/public/FloatingChatbot'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-poppins",
+});
 
 export const metadata: Metadata = {
   title: 'Formularios Digitales | DIM — San Miguel de Tucumán',
@@ -24,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es-AR">
-      <body className="font-sans antialiased">
+      <body className={`font-sans antialiased ${poppins.variable}`}>
         {children}
         <FloatingChatbot />
         <Analytics />

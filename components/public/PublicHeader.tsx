@@ -1,97 +1,51 @@
 "use client";
 
 import Link from "next/link";
-import { Building2, Menu, X } from "lucide-react";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
 
-export function PublicHeader() {
-  const [menuOpen, setMenuOpen] = useState(false);
-
+export function PublicHeader({ overlay = false }: { overlay?: boolean }) {
   return (
     <header
-      className="w-full print:hidden"
-      style={{ background: "var(--header-bg)", color: "var(--header-foreground)" }}
-    >
-      {/* Top bar */}
-      <div className="border-b border-white/20 px-4 py-1.5">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <p className="text-xs text-white/90 font-medium">
-            Municipalidad de San Miguel de Tucumán — Provincia de Tucumán
-          </p>
-          <Link
-            href="/admin"
-            className="text-xs text-white/90 hover:text-white transition-colors font-medium"
-          >
-            Acceso Administrativo
-          </Link>
-        </div>
-      </div>
-
-      {/* Main header */}
-      <div className="px-4 py-2.5">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="bg-white/20 rounded-lg p-2">
-              <Building2 className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <p className="font-bold text-white text-lg leading-tight">
-                Dir. de Ingresos Municipales
-              </p>
-              <p className="text-white/90 text-xs font-medium">Municipalidad de San Miguel de Tucumán</p>
-            </div>
-          </Link>
-
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/" className="text-sm text-white hover:text-white/80 transition-colors font-medium">
-              Inicio
-            </Link>
-            <Link href="/#formularios" className="text-sm text-white hover:text-white/80 transition-colors font-medium">
-              Formularios
-            </Link>
-            <Link
-              href="https://municipalidad.gob.ar"
-              target="_blank"
-              className="text-sm text-white hover:text-white/80 transition-colors font-medium"
-            >
-              Sitio Municipal
-            </Link>
-          </nav>
-
-          {/* Mobile menu button */}
-          <button
-            className="md:hidden text-white"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Menú"
-          >
-            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile menu */}
-      {menuOpen && (
-        <div className="md:hidden border-t border-white/10 px-4 py-3">
-          <nav className="flex flex-col gap-3">
-            <Link
-              href="/"
-              className="text-sm text-white/80 hover:text-white"
-              onClick={() => setMenuOpen(false)}
-            >
-              Inicio
-            </Link>
-            <Link
-              href="/#formularios"
-              className="text-sm text-white/80 hover:text-white"
-              onClick={() => setMenuOpen(false)}
-            >
-              Formularios
-            </Link>
-          </nav>
-        </div>
+      className={cn(
+        "w-full print:hidden",
+        overlay && "absolute inset-x-0 top-0 z-30"
       )}
+      style={
+        overlay
+          ? { color: "var(--header-foreground)" }
+          : { background: "var(--header-bg)", color: "var(--header-foreground)" }
+      }
+    >
+      {/* Main header */}
+      <div className="px-4 sm:px-6 lg:px-8 py-2.5">
+        <div className="flex items-center justify-between">
+          <Link href="/" className="flex items-center">
+            <div className="bg-white rounded-lg px-3 py-1.5 shadow-sm">
+              <Image
+                src="/logo-dim.png"
+                alt="Ciudad San Miguel de Tucumán — Dirección de Ingresos Municipales"
+                width={560}
+                height={92}
+                priority
+                className="h-8 sm:h-10 w-auto"
+              />
+            </div>
+          </Link>
+
+          {/* Nav */}
+          <nav className="flex items-center">
+            <Link
+              href="https://www.dimsmt.gob.ar/home/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-semibold text-primary bg-white rounded-lg px-3 py-1.5 shadow-sm hover:bg-white/90 transition-colors"
+            >
+              Página DIM
+            </Link>
+          </nav>
+        </div>
+      </div>
     </header>
   );
 }

@@ -10,23 +10,18 @@ export default async function HomePage() {
   const publishedForms = forms.filter((f) => f.status === "published");
 
   return (
-    <div className="theme-public min-h-screen flex flex-col bg-background">
-      <PublicHeader />
+    <div className="theme-public min-h-screen flex flex-col bg-background relative">
+      <PublicHeader overlay />
 
       <HomeClient publishedForms={publishedForms} />
 
       {/* Footer */}
       <footer
-        className="mt-auto px-4 py-6 bg-primary border-t border-white/20"
+        className="mt-auto px-4 sm:px-6 lg:px-8 py-6 bg-primary border-t border-white/20"
       >
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2">
-          <p className="text-xs text-white/90 font-medium">
-            © 2026 Desarrollado por la Dirección de IA, Municipalidad de San Miguel de Tucumán — Todos los derechos reservados
-          </p>
-          <p className="text-xs text-white/90 font-medium">
-            Dirección de Ingresos Municipales —- Sistemas y Tecnología
-          </p>
-        </div>
+        <p className="text-xs text-white/90 font-medium text-left">
+          © 2026 Desarrollado por la Dirección de IA, Municipalidad de San Miguel de Tucumán — Todos los derechos reservados
+        </p>
       </footer>
     </div>
   );

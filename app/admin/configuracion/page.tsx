@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Save, Building2, Mail, Globe, Bell } from "lucide-react";
+import { Save, Building2, Mail, Globe, Bell, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 
 export default function ConfiguracionPage() {
   const [municipio, setMunicipio] = useState("Municipalidad de San Miguel de Tucumán");
@@ -57,12 +58,7 @@ export default function ConfiguracionPage() {
 
   return (
     <div className="space-y-6 pb-20 md:pb-0 max-w-3xl">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Configuración</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Parámetros generales de la plataforma
-        </p>
-      </div>
+      <AdminPageHeader title="Configuración" icon={Settings} />
 
       {/* Institutional data */}
       <Card className="border-border">
