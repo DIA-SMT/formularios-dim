@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
-  Building2,
+  ExternalLink,
   LayoutDashboard,
   FileText,
   Inbox,
@@ -31,7 +32,7 @@ export function AdminSidebar() {
         "hidden md:flex flex-col shrink-0 transition-all duration-200 h-screen sticky top-0 overflow-y-auto print:hidden",
         collapsed ? "w-16" : "w-56"
       )}
-      style={{ background: "var(--sidebar)" }}
+      style={{ background: "linear-gradient(180deg, #1668e0 0%, #0c3c86 100%)" }}
     >
       {/* Logo */}
       <div
@@ -40,8 +41,15 @@ export function AdminSidebar() {
           "border-white/10"
         )}
       >
-        <div className="bg-white/15 rounded-lg p-1.5 shrink-0">
-          <Building2 className="w-5 h-5 text-white" />
+        <div className="bg-white rounded-lg p-1 shrink-0 shadow-sm">
+          <Image
+            src="/logoMuni-sm.png"
+            alt="Logo Municipalidad de San Miguel de Tucumán"
+            width={28}
+            height={28}
+            className="w-7 h-7 object-contain"
+            priority
+          />
         </div>
         {!collapsed && (
           <div className="overflow-hidden">
@@ -83,7 +91,7 @@ export function AdminSidebar() {
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/8 transition-colors"
           title={collapsed ? "Ver sitio público" : undefined}
         >
-          <Building2 className="w-4 h-4 shrink-0" />
+          <ExternalLink className="w-4 h-4 shrink-0" />
           {!collapsed && <span className="truncate">Ver sitio público</span>}
         </Link>
 

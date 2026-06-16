@@ -17,7 +17,7 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="admin-theme flex min-h-screen bg-background">
       <AdminSidebar />
       <div className="flex-1 flex flex-col min-w-0">
         <div className="print:hidden">
