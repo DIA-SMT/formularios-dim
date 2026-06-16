@@ -1,5 +1,7 @@
-import { redirect } from "next/navigation";
+import { LoginForm } from "@/components/admin/LoginForm";
 
-export default function AdminPage() {
-  redirect("/admin/dashboard");
+export const dynamic = "force-dynamic";
+
+export default function AdminLoginPage() {
+  return <LoginForm />;
 }

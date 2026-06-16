@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { LayoutDashboard, FileText, Inbox, Settings } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { LayoutDashboard, FileText, Inbox, Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const navItems = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -15,6 +16,14 @@ const navItems = [
 
 export function AdminMobileNav() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleLogout() {
+    const supabase = createSupabaseBrowserClient();
+    await supabase.auth.signOut();
+    router.replace("/admin");
+    router.refresh();
+  }
 
   return (
     <>
@@ -33,10 +42,17 @@ export function AdminMobileNav() {
             priority
           />
         </div>
-        <div>
+        <div className="flex-1 min-w-0">
           <p className="text-white text-sm font-semibold leading-none">DIM — Ingresos Municipales</p>
           <p className="text-white/50 text-xs">San Miguel de Tucumán</p>
         </div>
+        <button
+          onClick={handleLogout}
+          className="text-white/70 hover:text-white transition-colors p-1.5 shrink-0"
+          aria-label="Cerrar sesión"
+        >
+          <LogOut className="w-5 h-5" />
+        </button>
       </header>
 
       {/* Mobile bottom nav */}
