@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import {
   Search,
   ChevronRight,
@@ -9,6 +10,7 @@ import {
   Paperclip,
   PenLine,
 } from "lucide-react";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +36,20 @@ const statusLabels: Record<string, string> = {
   rechazado: "Rechazado",
 };
 
+// Mapea una fila cruda de Supabase (snake_case) al shape que usa la UI.
+function mapResponseRow(row: Record<string, any>): FormResponse {
+  return {
+    ...row,
+    formId: row.form_id,
+    formName: row.form_name,
+    tramiteCode: row.tramite_code,
+    submittedAt: row.submitted_at,
+    citizenName: row.citizen_name,
+    hasAttachments: row.has_attachments,
+    destinationEmail: row.destination_email,
+  } as FormResponse;
+}
+
 export function ResponsesTable({
   initialResponses,
   forms,
@@ -44,8 +60,60 @@ export function ResponsesTable({
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [formFilter, setFormFilter] = useState("all");
+  const [responses, setResponses] = useState<FormResponse[]>(initialResponses);
 
-  const filtered = initialResponses.filter((r) => {
+  // Si el server vuelve a renderizar (revalidate), sincronizamos el estado.
+  useEffect(() => {
+    setResponses(initialResponses);
+  }, [initialResponses]);
+
+  // Suscripción realtime: escucha altas/cambios/bajas en form_responses.
+  useEffect(() => {
+    const supabase = createSupabaseBrowserClient();
+    const channel = supabase
+      .channel("form_responses_realtime")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "form_responses" },
+        (payload) => {
+          const nueva = mapResponseRow(payload.new);
+          setResponses((prev) =>
+            prev.some((r) => r.id === nueva.id) ? prev : [nueva, ...prev]
+          );
+          const nombre = nueva.citizenName?.startsWith("data:image")
+            ? "Ciudadano"
+            : nueva.citizenName || "Ciudadano";
+          toast.success("Nueva respuesta recibida", {
+            description: `${nombre} — ${nueva.formName}`,
+          });
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "form_responses" },
+        (payload) => {
+          const actualizada = mapResponseRow(payload.new);
+          setResponses((prev) =>
+            prev.map((r) => (r.id === actualizada.id ? actualizada : r))
+          );
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "form_responses" },
+        (payload) => {
+          const borradaId = (payload.old as { id?: string }).id;
+          setResponses((prev) => prev.filter((r) => r.id !== borradaId));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const filtered = responses.filter((r) => {
     const matchesQuery =
       r.citizenName.toLowerCase().includes(query.toLowerCase()) ||
       r.tramiteCode.toLowerCase().includes(query.toLowerCase()) ||
