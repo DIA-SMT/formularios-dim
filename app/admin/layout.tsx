@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminMobileNav } from "@/components/admin/AdminMobileNav";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function AdminLayout({
   children,
@@ -13,11 +14,17 @@ export default function AdminLayout({
   const isLoginPage = pathname === "/admin";
 
   if (isLoginPage) {
-    return <>{children}</>;
+    return (
+      <>
+        {children}
+        <Toaster richColors position="top-right" />
+      </>
+    );
   }
 
   return (
     <div className="admin-theme flex min-h-screen bg-background">
+      <Toaster richColors position="top-right" />
       <AdminSidebar />
       <div className="flex-1 flex flex-col min-w-0">
         <div className="print:hidden">
