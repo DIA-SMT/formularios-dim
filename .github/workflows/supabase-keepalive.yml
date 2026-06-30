@@ -1,0 +1,32 @@
+name: Supabase Keepalive
+
+# Evita que el proyecto de Supabase (free tier) se pause por inactividad.
+# El free tier se pausa tras ~7 dias sin actividad: corremos a diario para tener margen.
+
+on:
+  schedule:
+    # Todos los dias a las 07:00 UTC (~04:00 Argentina). Cualquier hora sirve.
+    - cron: "0 7 * * *"
+  workflow_dispatch: {} # permite ejecutarlo manualmente desde la pestaña Actions
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          echo "Pinging Supabase..."
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${SUPABASE_URL}/rest/v1/forms?select=id&limit=1" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}")
+          echo "HTTP status: $HTTP_CODE"
+          # 2xx (lectura ok) o 401/403 (RLS) igual cuentan como actividad en la DB.
+          if [ "$HTTP_CODE" -ge 500 ]; then
+            echo "Respuesta inesperada del servidor"
+            exit 1
+          fi
+          echo "Keepalive OK"
